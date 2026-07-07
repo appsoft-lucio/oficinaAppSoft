@@ -1,8 +1,10 @@
-import { Link } from 'react-router-dom'
-import logoAppSoft from '../../assets/logo-appsoft-orange-Photoroom.png'
+import DashboardHeader from '../../components/DashboardHeader/DashboardHeader'
+import DashboardPanel from '../../components/DashboardPanel/DashboardPanel'
+import DashboardSidebar from '../../components/DashboardSidebar/DashboardSidebar'
+import SummaryCard, { type SummaryCardProps } from '../../components/SummaryCard/SummaryCard'
 import './DashboardPage.css'
 
-const summaryCards = [
+const summaryCards: SummaryCardProps[] = [
   { label: 'Ordens hoje', value: '5', detail: '3 concluídas' },
   { label: 'Pendentes', value: '2', detail: '1 aguardando peça' },
   { label: 'Receita hoje', value: 'R$ 1.450', detail: '+12% vs. ontem' },
@@ -19,53 +21,19 @@ const notifications = [
 export default function DashboardPage() {
   return (
     <main className="dashboard-page">
-      <aside className="dashboard-sidebar">
-        <img className="dashboard-logo" src={logoAppSoft} alt="AppSoft Oficina" />
-        <nav className="dashboard-nav" aria-label="Painel">
-          <Link className="dashboard-nav-link active" to="/dashboard">
-            Dashboard
-          </Link>
-          <button className="dashboard-nav-link" type="button">
-            Clientes
-          </button>
-          <button className="dashboard-nav-link" type="button">
-            Ordens
-          </button>
-          <button className="dashboard-nav-link" type="button">
-            Relatórios
-          </button>
-        </nav>
-        <Link className="dashboard-exit" to="/">
-          Sair
-        </Link>
-      </aside>
+      <DashboardSidebar />
 
       <section className="dashboard-content">
-        <header className="dashboard-header">
-          <div>
-            <p className="dashboard-kicker">Oficina AppSoft</p>
-            <h1>Bem-vindo, João</h1>
-          </div>
-          <Link className="dashboard-profile" to="/login">
-            Perfil
-          </Link>
-        </header>
+        <DashboardHeader userName="João" />
 
         <section className="summary-grid" aria-label="Resumo do dia">
           {summaryCards.map((card) => (
-            <article className="summary-card" key={card.label}>
-              <span>{card.label}</span>
-              <strong>{card.value}</strong>
-              <p>{card.detail}</p>
-            </article>
+            <SummaryCard key={card.label} {...card} />
           ))}
         </section>
 
         <div className="dashboard-columns">
-          <section className="dashboard-panel">
-            <div className="panel-header">
-              <h2>Ações rápidas</h2>
-            </div>
+          <DashboardPanel title="Ações rápidas">
             <div className="quick-actions">
               {quickActions.map((action) => (
                 <button type="button" key={action}>
@@ -73,18 +41,15 @@ export default function DashboardPage() {
                 </button>
               ))}
             </div>
-          </section>
+          </DashboardPanel>
 
-          <section className="dashboard-panel">
-            <div className="panel-header">
-              <h2>Notificações recentes</h2>
-            </div>
+          <DashboardPanel title="Notificações recentes">
             <ul className="notification-list">
               {notifications.map((notification) => (
                 <li key={notification}>{notification}</li>
               ))}
             </ul>
-          </section>
+          </DashboardPanel>
         </div>
       </section>
     </main>

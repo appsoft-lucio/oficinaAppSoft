@@ -1,14 +1,10 @@
 import { Link } from 'react-router-dom'
-import logoAppSoft from '../../assets/logo-appsoft-orange-Photoroom.png'
+import FeatureCard, { type FeatureCardProps } from '../../components/FeatureCard/FeatureCard'
+import LandingFooter from '../../components/LandingFooter/LandingFooter'
+import LandingHeader from '../../components/LandingHeader/LandingHeader'
 import './LandingPage.css'
 
-type Feature = {
-  icon: string
-  title: string
-  description: string
-}
-
-const features: Feature[] = [
+const features: FeatureCardProps[] = [
   {
     icon: '📋',
     title: 'Ordens de Serviço',
@@ -44,24 +40,7 @@ const features: Feature[] = [
 export default function LandingPage() {
   return (
     <>
-      <header className="nav-bar">
-        <div className="nav-container">
-          <img className="nav-logo" src={logoAppSoft} alt="AppSoft" />
-          <nav className="nav-links" aria-label="Principal">
-            <button className="nav-link">Recursos</button>
-            <button className="nav-link">Preços</button>
-            <button className="nav-link">Sobre</button>
-          </nav>
-          <div className="nav-actions">
-            <Link className="btn-login" to="/login">
-              Login
-            </Link>
-            <Link className="btn-signup" to="/login">
-              Cadastre-se
-            </Link>
-          </div>
-        </div>
-      </header>
+      <LandingHeader />
 
       <section className="hero">
         <div className="hero-content">
@@ -87,13 +66,7 @@ export default function LandingPage() {
         </div>
         <div className="features-grid">
           {features.map((feature) => (
-            <article className="feature-card" key={feature.title}>
-              <div className="feature-icon" aria-hidden="true">
-                {feature.icon}
-              </div>
-              <h3>{feature.title}</h3>
-              <p>{feature.description}</p>
-            </article>
+            <FeatureCard key={feature.title} {...feature} />
           ))}
         </div>
       </section>
@@ -109,12 +82,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="footer">
-        <div className="footer-content">
-          <img className="footer-logo" src={logoAppSoft} alt="AppSoft" />
-          <p>&copy; 2026 AppSoft. Todos os direitos reservados.</p>
-        </div>
-      </footer>
+      <LandingFooter />
     </>
   )
 }

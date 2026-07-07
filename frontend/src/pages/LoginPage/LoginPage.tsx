@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import logoAppSoft from '../../assets/logo-appsoft-orange-Photoroom.png'
+import BrandLogo from '../../components/BrandLogo/BrandLogo'
 import './LoginPage.css'
 
 export default function LoginPage() {
@@ -18,7 +18,7 @@ export default function LoginPage() {
       </Link>
 
       <section className="login-showcase" aria-label="Resumo AppSoft Oficina">
-        <img className="showcase-logo" src={logoAppSoft} alt="AppSoft Oficina" />
+        <BrandLogo className="showcase-logo" />
         <div className="showcase-copy">
           <p className="showcase-label">Gestão para oficina mecânica</p>
           <h1>Controle sua operação sem perder tempo no balcão.</h1>
