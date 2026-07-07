@@ -1,10 +1,6 @@
+import { Link } from 'react-router-dom'
 import logoAppSoft from '../../assets/logo-appsoft-orange-Photoroom.png'
-import type { AppPage } from '../../types/navigation'
 import './LandingPage.css'
-
-type LandingPageProps = {
-  onNavigate: (page: AppPage) => void
-}
 
 type Feature = {
   icon: string
@@ -45,7 +41,7 @@ const features: Feature[] = [
   },
 ]
 
-export default function LandingPage({ onNavigate }: LandingPageProps) {
+export default function LandingPage() {
   return (
     <>
       <header className="nav-bar">
@@ -57,12 +53,12 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             <button className="nav-link">Sobre</button>
           </nav>
           <div className="nav-actions">
-            <button className="btn-login" onClick={() => onNavigate('login')}>
+            <Link className="btn-login" to="/login">
               Login
-            </button>
-            <button className="btn-signup" onClick={() => onNavigate('login')}>
+            </Link>
+            <Link className="btn-signup" to="/login">
               Cadastre-se
-            </button>
+            </Link>
           </div>
         </div>
       </header>
@@ -76,9 +72,9 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
             Aumente sua produtividade com a plataforma AppSoft.
           </p>
           <div className="hero-buttons">
-            <button className="btn-primary" onClick={() => onNavigate('login')}>
+            <Link className="btn-primary" to="/login">
               Começar agora
-            </button>
+            </Link>
             <button className="btn-secondary">Ver demo</button>
           </div>
         </div>
@@ -106,9 +102,9 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
         <div className="cta-content">
           <h2>Pronto para começar?</h2>
           <p>Junte-se a centenas de oficinas que confiam na AppSoft para gerenciar seus negócios.</p>
-          <button className="btn-primary-large" onClick={() => onNavigate('login')}>
+          <Link className="btn-primary-large" to="/login">
             Criar conta grátis
-          </button>
+          </Link>
           <p className="cta-footer">Sem cartão de crédito necessário. Acesso imediato.</p>
         </div>
       </section>

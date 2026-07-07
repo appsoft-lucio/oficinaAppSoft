@@ -1,17 +1,21 @@
+import type { FormEvent } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import logoAppSoft from '../../assets/logo-appsoft-orange-Photoroom.png'
-import type { AppPage } from '../../types/navigation'
 import './LoginPage.css'
 
-type LoginPageProps = {
-  onNavigate: (page: AppPage) => void
-}
+export default function LoginPage() {
+  const navigate = useNavigate()
 
-export default function LoginPage({ onNavigate }: LoginPageProps) {
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    navigate('/dashboard')
+  }
+
   return (
     <main className="login-page">
-      <button className="btn-back" onClick={() => onNavigate('landing')}>
+      <Link className="btn-back" to="/">
         ← Voltar
-      </button>
+      </Link>
 
       <section className="login-showcase" aria-label="Resumo AppSoft Oficina">
         <img className="showcase-logo" src={logoAppSoft} alt="AppSoft Oficina" />
@@ -47,7 +51,7 @@ export default function LoginPage({ onNavigate }: LoginPageProps) {
           <p className="login-subtitle">Use seus dados para acessar o painel da AppSoft.</p>
         </div>
 
-        <form className="login-form">
+        <form className="login-form" onSubmit={handleSubmit}>
           <div className="field-group">
             <label htmlFor="user">E-mail ou usuário</label>
             <input id="user" type="text" placeholder="exemplo@appsoft.com" autoComplete="username" />
