@@ -1,25 +1,32 @@
-import { navLinks } from '../../data/home'
+import { navLinks } from "../../data/home";
+import logoAppSoft from "../../assets/logo-appsoft-orange-semFundo.png";
 
 export default function Header() {
   return (
-    <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <strong className="text-lg font-black tracking-tight text-orange-600">
-          Oficina AppSoft
-        </strong>
+    <header className="border-b border-slate-800 bg-slate-950">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-5 px-5 py-4 sm:px-6">
+        <img
+          className="h-16 w-auto sm:h-24"
+          src={logoAppSoft}
+          alt="Oficina AppSoft"
+        />
 
-        <nav className="hidden items-center gap-6 text-sm font-bold text-slate-600 md:flex">
+        <nav className="hidden items-center gap-7 text-[15px] font-bold text-slate-300 md:flex">
           {navLinks.map((link) => (
-            <a key={link.href} href={link.href}>
+            <a
+              className="transition hover:text-orange-400"
+              key={link.href}
+              href={link.href}
+            >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <button className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-black text-white">
+        <button className="min-h-10 rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700">
           Entrar
         </button>
       </div>
     </header>
-  )
+  );
 }

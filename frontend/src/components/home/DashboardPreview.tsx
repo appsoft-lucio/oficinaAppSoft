@@ -6,17 +6,17 @@ export default function DashboardPreview() {
   return (
     <div
       id="dashboard"
-      className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xl shadow-slate-200"
+      className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-200 sm:p-4"
     >
-      <div className="rounded-lg bg-slate-950 p-5 text-white">
+      <div className="rounded-lg bg-slate-950 p-4 text-white sm:p-5">
         <div className="mb-6 flex items-center justify-between">
           <div>
             <p className="text-xs font-black uppercase tracking-[0.16em] text-orange-400">
               Hoje
             </p>
-            <h2 className="mt-1 text-2xl font-black">Dashboard</h2>
+            <h2 className="mt-1 text-[26px] font-black leading-tight">Dashboard</h2>
           </div>
-          <span className="rounded-full bg-orange-500 px-3 py-1 text-xs font-black">
+          <span className="rounded-full bg-orange-500 px-3 py-1 text-[12px] font-black">
             Online
           </span>
         </div>
@@ -27,7 +27,7 @@ export default function DashboardPreview() {
           ))}
         </div>
 
-        <div className="mt-5 space-y-3 rounded-lg bg-white p-4 text-slate-900">
+        <div className="mt-5 space-y-3 rounded-lg bg-white p-3 text-slate-900 sm:p-4">
           {activeServices.map((service) => (
             <ServiceRow key={service.title} {...service} />
           ))}

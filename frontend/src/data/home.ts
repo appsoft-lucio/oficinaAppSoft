@@ -10,7 +10,15 @@ export const dashboardMetrics = [
   { label: 'Receita mensal', value: 'R$ 42k' },
 ]
 
-export const activeServices = [
+export type ServiceStatusTone = 'orange' | 'slate'
+
+export type ActiveService = {
+  title: string
+  status: string
+  statusTone: ServiceStatusTone
+}
+
+export const activeServices: ActiveService[] = [
   { title: 'Troca de óleo - Civic', status: 'Em andamento', statusTone: 'orange' },
   { title: 'Revisão completa - Onix', status: 'Aguardando', statusTone: 'slate' },
 ]

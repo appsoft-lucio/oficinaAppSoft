@@ -1,7 +1,9 @@
+import type { ServiceStatusTone } from '../../data/home'
+
 type ServiceRowProps = {
   title: string
   status: string
-  statusTone: 'orange' | 'slate'
+  statusTone: ServiceStatusTone
 }
 
 const statusColors = {
@@ -11,8 +13,8 @@ const statusColors = {
 
 export default function ServiceRow({ title, status, statusTone }: ServiceRowProps) {
   return (
-    <div className="flex items-center justify-between rounded-lg bg-slate-100 p-3">
-      <span className="font-bold">{title}</span>
+    <div className="flex flex-col gap-1 rounded-lg bg-slate-100 p-3 sm:flex-row sm:items-center sm:justify-between">
+      <span className="text-[15px] font-bold leading-snug">{title}</span>
       <span className={`text-sm font-black ${statusColors[statusTone]}`}>{status}</span>
     </div>
   )
