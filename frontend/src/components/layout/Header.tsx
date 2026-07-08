@@ -23,9 +23,12 @@ export default function Header() {
           ))}
         </nav>
 
-        <button className="min-h-10 rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700">
+        <a
+          className="inline-flex min-h-10 items-center justify-center rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700"
+          href="#contato"
+        >
           Entrar
-        </button>
+        </a>
       </div>
     </header>
   );

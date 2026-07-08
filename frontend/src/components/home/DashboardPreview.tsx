@@ -4,10 +4,7 @@ import ServiceRow from './ServiceRow'
 
 export default function DashboardPreview() {
   return (
-    <div
-      id="dashboard"
-      className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-200 sm:p-4"
-    >
+    <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-2xl shadow-slate-200 sm:p-4">
       <div className="rounded-lg bg-slate-950 p-4 text-white sm:p-5">
         <div className="mb-6 flex items-center justify-between">
           <div>
