@@ -5,15 +5,23 @@ type AuthFieldProps = {
   name: string
   placeholder: string
   defaultValue?: string
+  value?: string
+  onChange?: (value: string) => void
+  required?: boolean
+  autoComplete?: string
   type?: string
 }
 
 export default function AuthField({
+  autoComplete,
   defaultValue,
   label,
   name,
+  onChange,
   placeholder,
+  required = false,
   type = 'text',
+  value,
 }: AuthFieldProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const isPassword = type === 'password'
@@ -27,10 +35,14 @@ export default function AuthField({
           className={`h-12 w-full rounded-lg border border-slate-300 bg-white px-4 text-slate-950 outline-none transition placeholder:text-slate-400 focus:border-orange-500 focus:ring-4 focus:ring-orange-100 ${
             isPassword ? 'pr-28' : ''
           }`}
+          autoComplete={autoComplete}
           defaultValue={defaultValue}
           name={name}
+          onChange={(event) => onChange?.(event.target.value)}
           placeholder={placeholder}
+          required={required}
           type={inputType}
+          value={value}
         />
 
         {isPassword ? (
