@@ -5,7 +5,12 @@ import DashboardTopbar from '../../components/dashboard/DashboardTopbar'
 import { supabase } from '../../lib/supabase'
 import { listClientes, type Cliente } from '../../services/clientes'
 import { ensureUserOficina, type Oficina } from '../../services/oficinas'
-import { createOrdem, listOrdens, type OrdemServico } from '../../services/ordens'
+import {
+  createOrdem,
+  listOrdens,
+  type OrdemServico,
+  updateOrdemStatus,
+} from '../../services/ordens'
 import { listVeiculos, type Veiculo } from '../../services/veiculos'
 
 const statusOptions = [
@@ -26,6 +31,7 @@ export default function OrdensPage() {
   const [oficina, setOficina] = useState<Oficina | null>(null)
   const [ordens, setOrdens] = useState<OrdemServico[]>([])
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
+  const [statusMessage, setStatusMessage] = useState('')
   const [status, setStatus] = useState('aberta')
   const [titulo, setTitulo] = useState('')
   const [valor, setValor] = useState('')
@@ -124,6 +130,24 @@ export default function OrdensPage() {
       setMessage('Nao foi possivel cadastrar a ordem.')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  async function handleStatusChange(ordemId: string, nextStatus: string) {
+    setStatusMessage('')
+
+    try {
+      const updatedOrdem = await updateOrdemStatus({
+        ordemId,
+        status: nextStatus,
+      })
+
+      setOrdens((currentOrdens) =>
+        currentOrdens.map((ordem) => (ordem.id === ordemId ? updatedOrdem : ordem)),
+      )
+      setStatusMessage('Status atualizado.')
+    } catch {
+      setStatusMessage('Nao foi possivel atualizar o status.')
     }
   }
 
@@ -283,6 +307,12 @@ export default function OrdensPage() {
               Historico inicial de servicos da oficina.
             </p>
 
+            {statusMessage ? (
+              <p className="mt-4 rounded-lg bg-orange-50 px-4 py-3 text-sm font-bold text-orange-700">
+                {statusMessage}
+              </p>
+            ) : null}
+
             <div className="mt-5 grid gap-3">
               {ordens.length > 0 ? (
                 ordens.map((ordem) => (
@@ -300,9 +330,21 @@ export default function OrdensPage() {
                         </span>
                       </div>
                       <div className="flex flex-col gap-2 sm:items-end">
-                        <span className="rounded-lg bg-orange-50 px-3 py-1 text-xs font-black text-orange-700">
-                          {ordem.status}
-                        </span>
+                        <label className="sr-only" htmlFor={`status-${ordem.id}`}>
+                          Status da ordem
+                        </label>
+                        <select
+                          className="h-9 rounded-lg border border-orange-200 bg-orange-50 px-2 text-xs font-black text-orange-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                          id={`status-${ordem.id}`}
+                          onChange={(event) => handleStatusChange(ordem.id, event.target.value)}
+                          value={ordem.status}
+                        >
+                          {statusOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
                         <strong className="text-sm font-black text-slate-950">
                           R$ {Number(ordem.valor).toFixed(2)}
                         </strong>

@@ -21,6 +21,11 @@ type CreateOrdemParams = {
   valor?: string
 }
 
+type UpdateOrdemStatusParams = {
+  ordemId: string
+  status: string
+}
+
 export async function listOrdens(oficinaId: string) {
   const { data, error } = await supabase
     .from('ordens_servico')
@@ -57,6 +62,21 @@ export async function createOrdem({
       valor: Number.isNaN(parsedValor) ? 0 : parsedValor,
       veiculo_id: veiculoId,
     })
+    .select('id, cliente_id, veiculo_id, titulo, descricao, status, valor, created_at')
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
+export async function updateOrdemStatus({ ordemId, status }: UpdateOrdemStatusParams) {
+  const { data, error } = await supabase
+    .from('ordens_servico')
+    .update({ status })
+    .eq('id', ordemId)
     .select('id, cliente_id, veiculo_id, titulo, descricao, status, valor, created_at')
     .single()
 
