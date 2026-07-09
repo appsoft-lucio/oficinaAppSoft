@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import AuthField from '../../components/auth/AuthField'
 import AuthLayout from '../../components/auth/AuthLayout'
 
@@ -29,9 +30,9 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-slate-500">
           Já tem uma conta?{' '}
-          <a className="font-black text-orange-600 hover:text-orange-700" href="/login">
+          <Link className="font-black text-orange-600 hover:text-orange-700" to="/login">
             Entrar
-          </a>
+          </Link>
         </p>
       </form>
     </AuthLayout>

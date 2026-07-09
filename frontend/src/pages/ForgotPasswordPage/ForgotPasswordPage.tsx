@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import AuthField from '../../components/auth/AuthField'
 import AuthLayout from '../../components/auth/AuthLayout'
 
@@ -27,9 +28,9 @@ export default function ForgotPasswordPage() {
 
         <p className="text-center text-sm text-slate-500">
           Lembrou a senha?{' '}
-          <a className="font-black text-orange-600 hover:text-orange-700" href="/login">
+          <Link className="font-black text-orange-600 hover:text-orange-700" to="/login">
             Voltar para login
-          </a>
+          </Link>
         </p>
       </form>
     </AuthLayout>

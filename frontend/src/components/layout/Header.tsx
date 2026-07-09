@@ -1,5 +1,6 @@
-import { navLinks } from "../../data/home";
-import logoAppSoft from "../../assets/logo-appsoft-orange-semFundo.png";
+import { Link } from 'react-router-dom'
+import logoAppSoft from '../../assets/logo-appsoft-orange-semFundo.png'
+import { navLinks } from '../../data/home'
 
 export default function Header() {
   return (
@@ -15,21 +16,21 @@ export default function Header() {
           {navLinks.map((link) => (
             <a
               className="transition hover:text-orange-400"
-              key={link.href}
               href={link.href}
+              key={link.href}
             >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <a
+        <Link
           className="inline-flex min-h-10 items-center justify-center rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700"
-          href="/login"
+          to="/login"
         >
           Entrar
-        </a>
+        </Link>
       </div>
     </header>
-  );
+  )
 }

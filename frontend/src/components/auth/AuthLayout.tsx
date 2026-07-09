@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import logoAppSoft from '../../assets/logo-appsoft-orange-semFundo.png'
 
 type AuthLayoutProps = {
@@ -18,9 +19,9 @@ export default function AuthLayout({
     <main className="min-h-screen bg-slate-950 px-5 py-8 text-white sm:px-6">
       <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-6xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <section>
-          <a className="inline-block" href="/">
+          <Link className="inline-block" to="/">
             <img className="h-20 w-auto sm:h-24" src={logoAppSoft} alt="Oficina AppSoft" />
-          </a>
+          </Link>
           <p className="mt-10 text-sm font-black uppercase tracking-[0.18em] text-orange-400">
             {eyebrow}
           </p>

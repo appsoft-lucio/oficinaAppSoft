@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import AuthField from '../../components/auth/AuthField'
 import AuthLayout from '../../components/auth/AuthLayout'
 
@@ -20,12 +21,15 @@ export default function LoginPage() {
         <AuthField label="Senha" name="password" placeholder="Sua senha" type="password" />
 
         <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-          <a className="font-bold text-orange-600 hover:text-orange-700" href="/esqueci-minha-senha">
+          <Link
+            className="font-bold text-orange-600 hover:text-orange-700"
+            to="/esqueci-minha-senha"
+          >
             Esqueci minha senha
-          </a>
-          <a className="font-bold text-slate-600 hover:text-slate-950" href="/criar-conta">
+          </Link>
+          <Link className="font-bold text-slate-600 hover:text-slate-950" to="/criar-conta">
             Criar conta
-          </a>
+          </Link>
         </div>
 
         <button
