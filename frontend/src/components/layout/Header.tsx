@@ -25,7 +25,7 @@ export default function Header() {
 
         <a
           className="inline-flex min-h-10 items-center justify-center rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700"
-          href="#contato"
+          href="/login"
         >
           Entrar
         </a>
