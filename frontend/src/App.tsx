@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage/DashboardPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage'
 import HomePage from './pages/HomePage/HomePage'
 import LoginPage from './pages/LoginPage/LoginPage'
+import OrdensPage from './pages/OrdensPage/OrdensPage'
 import RegisterPage from './pages/RegisterPage/RegisterPage'
 import VeiculosPage from './pages/VeiculosPage/VeiculosPage'
 
@@ -13,6 +14,7 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/dashboard" element={<DashboardPage />} />
+      <Route path="/ordens" element={<OrdensPage />} />
       <Route path="/clientes" element={<ClientesPage />} />
       <Route path="/veiculos" element={<VeiculosPage />} />
       <Route path="/criar-conta" element={<RegisterPage />} />
