@@ -10,6 +10,7 @@ import {
   type OrdemServico,
   updateOrdemPagamentoStatus,
 } from '../../services/ordens'
+import { listVeiculos, type Veiculo } from '../../services/veiculos'
 
 const pagamentoStatusOptions = [
   { label: 'Em aberto', value: 'em_aberto' },
@@ -44,13 +45,80 @@ function getCurrentMonthKey() {
   }).format(new Date())
 }
 
+function getDateInputValue(date: Date) {
+  return date.toISOString().slice(0, 10)
+}
+
+function getStartOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
+}
+
+function getEndOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)
+}
+
+function getPeriodRange(period: string, customStartDate: string, customEndDate: string) {
+  const today = new Date()
+
+  if (period === 'mes_atual') {
+    return {
+      end: getEndOfMonth(today),
+      start: getStartOfMonth(today),
+    }
+  }
+
+  if (period === 'mes_anterior') {
+    const previousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+
+    return {
+      end: getEndOfMonth(previousMonth),
+      start: getStartOfMonth(previousMonth),
+    }
+  }
+
+  if (period === 'ultimos_3_meses') {
+    return {
+      end: today,
+      start: new Date(today.getFullYear(), today.getMonth() - 2, 1),
+    }
+  }
+
+  if (period === 'ano_atual') {
+    return {
+      end: today,
+      start: new Date(today.getFullYear(), 0, 1),
+    }
+  }
+
+  if (period === 'personalizado' && customStartDate && customEndDate) {
+    return {
+      end: new Date(`${customEndDate}T23:59:59.999`),
+      start: new Date(`${customStartDate}T00:00:00.000`),
+    }
+  }
+
+  return {
+    end: null,
+    start: null,
+  }
+}
+
 export default function FinanceiroPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
+  const [customEndDate, setCustomEndDate] = useState(getDateInputValue(new Date()))
+  const [customStartDate, setCustomStartDate] = useState(
+    getDateInputValue(getStartOfMonth(new Date())),
+  )
+  const [clienteFilter, setClienteFilter] = useState('todos')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [message, setMessage] = useState('')
   const [oficina, setOficina] = useState<Oficina | null>(null)
   const [ordens, setOrdens] = useState<OrdemServico[]>([])
+  const [pagamentoFilter, setPagamentoFilter] = useState('todos')
+  const [periodFilter, setPeriodFilter] = useState('mes_atual')
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
+  const [veiculoFilter, setVeiculoFilter] = useState('todos')
+  const [veiculos, setVeiculos] = useState<Veiculo[]>([])
   const oficinaName = oficina?.nome ?? 'Oficina Demonstracao'
 
   const clientesById = useMemo(() => {
@@ -60,27 +128,69 @@ export default function FinanceiroPage() {
     }, {})
   }, [clientes])
 
+  const veiculosById = useMemo(() => {
+    return veiculos.reduce<Record<string, Veiculo>>((acc, veiculo) => {
+      acc[veiculo.id] = veiculo
+      return acc
+    }, {})
+  }, [veiculos])
+
+  const filteredOrdens = useMemo(() => {
+    const { end, start } = getPeriodRange(periodFilter, customStartDate, customEndDate)
+
+    return ordens.filter((ordem) => {
+      const ordemDate = new Date(ordem.created_at)
+      const isInsidePeriod = (!start || ordemDate >= start) && (!end || ordemDate <= end)
+      const matchesCliente = clienteFilter === 'todos' || ordem.cliente_id === clienteFilter
+      const matchesVeiculo = veiculoFilter === 'todos' || ordem.veiculo_id === veiculoFilter
+      const matchesPagamento =
+        pagamentoFilter === 'todos' || ordem.pagamento_status === pagamentoFilter
+
+      return isInsidePeriod && matchesCliente && matchesVeiculo && matchesPagamento
+    })
+  }, [
+    clienteFilter,
+    customEndDate,
+    customStartDate,
+    ordens,
+    pagamentoFilter,
+    periodFilter,
+    veiculoFilter,
+  ])
+
   const totalRecebido = useMemo(() => {
+    return filteredOrdens
+      .filter((ordem) => ordem.pagamento_status === 'pago')
+      .reduce((total, ordem) => total + Number(ordem.valor), 0)
+  }, [filteredOrdens])
+
+  const totalRecebidoAteHoje = useMemo(() => {
     return ordens
       .filter((ordem) => ordem.pagamento_status === 'pago')
       .reduce((total, ordem) => total + Number(ordem.valor), 0)
   }, [ordens])
 
   const totalEmAberto = useMemo(() => {
+    return filteredOrdens
+      .filter((ordem) => ordem.pagamento_status !== 'pago')
+      .reduce((total, ordem) => total + Number(ordem.valor), 0)
+  }, [filteredOrdens])
+
+  const totalEmAbertoAteHoje = useMemo(() => {
     return ordens
       .filter((ordem) => ordem.pagamento_status !== 'pago')
       .reduce((total, ordem) => total + Number(ordem.valor), 0)
   }, [ordens])
 
   const totalPrevisto = useMemo(() => {
-    return ordens.reduce((total, ordem) => total + Number(ordem.valor), 0)
-  }, [ordens])
+    return filteredOrdens.reduce((total, ordem) => total + Number(ordem.valor), 0)
+  }, [filteredOrdens])
 
-  const ordensPagas = ordens.filter((ordem) => ordem.pagamento_status === 'pago').length
+  const ordensPagas = filteredOrdens.filter((ordem) => ordem.pagamento_status === 'pago').length
   const currentMonthKey = getCurrentMonthKey()
 
   const monthlySummary = useMemo(() => {
-    const summary = ordens.reduce<
+    const summary = filteredOrdens.reduce<
       Record<
         string,
         {
@@ -126,7 +236,7 @@ export default function FinanceiroPage() {
 
         return bYear - aYear || bMonth - aMonth
       })
-  }, [ordens])
+  }, [filteredOrdens])
 
   const currentMonthSummary = monthlySummary.find((item) => item.month === currentMonthKey) ?? {
     aberto: 0,
@@ -152,13 +262,15 @@ export default function FinanceiroPage() {
 
       setOficina(preparedOficina)
 
-      const [loadedClientes, loadedOrdens] = await Promise.all([
+      const [loadedClientes, loadedOrdens, loadedVeiculos] = await Promise.all([
         listClientes(preparedOficina.id),
         listOrdens(preparedOficina.id),
+        listVeiculos(preparedOficina.id),
       ])
 
       setClientes(loadedClientes)
       setOrdens(loadedOrdens)
+      setVeiculos(loadedVeiculos)
     }
 
     loadFinanceiro()
@@ -209,7 +321,7 @@ export default function FinanceiroPage() {
           title="Controle financeiro"
         >
           <span className="inline-flex min-h-11 items-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-black text-slate-700">
-            {ordens.length} ordem(ns)
+            {filteredOrdens.length} ordem(ns)
           </span>
         </DashboardTopbar>
 
@@ -220,26 +332,138 @@ export default function FinanceiroPage() {
             </div>
           ) : null}
 
+          <section className="mb-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <h2 className="text-xl font-black">Filtros financeiros</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Consulte receita por periodo, cliente, carro e pagamento.
+                </p>
+              </div>
+              <button
+                className="min-h-10 rounded-lg border border-slate-300 px-4 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+                onClick={() => {
+                  setClienteFilter('todos')
+                  setPagamentoFilter('todos')
+                  setPeriodFilter('mes_atual')
+                  setVeiculoFilter('todos')
+                }}
+                type="button"
+              >
+                Limpar filtros
+              </button>
+            </div>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <label className="block">
+                <span className="text-sm font-black text-slate-700">Periodo</span>
+                <select
+                  className="mt-2 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                  onChange={(event) => setPeriodFilter(event.target.value)}
+                  value={periodFilter}
+                >
+                  <option value="mes_atual">Este mes</option>
+                  <option value="mes_anterior">Mes anterior</option>
+                  <option value="ultimos_3_meses">Ultimos 3 meses</option>
+                  <option value="ano_atual">Este ano</option>
+                  <option value="todos">Todo o periodo</option>
+                  <option value="personalizado">Personalizado</option>
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-black text-slate-700">Cliente</span>
+                <select
+                  className="mt-2 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                  onChange={(event) => setClienteFilter(event.target.value)}
+                  value={clienteFilter}
+                >
+                  <option value="todos">Todos os clientes</option>
+                  {clientes.map((cliente) => (
+                    <option key={cliente.id} value={cliente.id}>
+                      {cliente.nome}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-black text-slate-700">Carro</span>
+                <select
+                  className="mt-2 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                  onChange={(event) => setVeiculoFilter(event.target.value)}
+                  value={veiculoFilter}
+                >
+                  <option value="todos">Todos os carros</option>
+                  {veiculos.map((veiculo) => (
+                    <option key={veiculo.id} value={veiculo.id}>
+                      {veiculo.modelo} {veiculo.placa ? `- ${veiculo.placa}` : ''}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-black text-slate-700">Pagamento</span>
+                <select
+                  className="mt-2 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                  onChange={(event) => setPagamentoFilter(event.target.value)}
+                  value={pagamentoFilter}
+                >
+                  <option value="todos">Todos</option>
+                  {pagamentoStatusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            {periodFilter === 'personalizado' ? (
+              <div className="mt-4 grid gap-4 md:grid-cols-2">
+                <label className="block">
+                  <span className="text-sm font-black text-slate-700">Data inicial</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-lg border border-slate-300 px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                    onChange={(event) => setCustomStartDate(event.target.value)}
+                    type="date"
+                    value={customStartDate}
+                  />
+                </label>
+                <label className="block">
+                  <span className="text-sm font-black text-slate-700">Data final</span>
+                  <input
+                    className="mt-2 h-11 w-full rounded-lg border border-slate-300 px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                    onChange={(event) => setCustomEndDate(event.target.value)}
+                    type="date"
+                    value={customEndDate}
+                  />
+                </label>
+              </div>
+            ) : null}
+          </section>
+
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <SummaryCard
-              detail={`Mes ${currentMonthKey}`}
-              label="Recebido no mes"
-              value={formatCurrency(currentMonthSummary.recebido)}
+              detail={`${filteredOrdens.length} ordem(ns) filtradas`}
+              label="Recebido no periodo"
+              value={formatCurrency(totalRecebido)}
             />
             <SummaryCard
-              detail={`Mes ${currentMonthKey}`}
-              label="Em aberto no mes"
-              value={formatCurrency(currentMonthSummary.aberto)}
+              detail={`${currentMonthSummary.month === currentMonthKey ? 'Mes atual' : 'Periodo filtrado'}`}
+              label="Em aberto no periodo"
+              value={formatCurrency(totalEmAberto)}
             />
             <SummaryCard
               detail={`${ordensPagas} ordem(ns) pagas`}
               label="Recebido ate hoje"
-              value={formatCurrency(totalRecebido)}
+              value={formatCurrency(totalRecebidoAteHoje)}
             />
             <SummaryCard
               detail={`${ordens.length} ordem(ns) no total`}
               label="Em aberto ate hoje"
-              value={formatCurrency(totalEmAberto)}
+              value={formatCurrency(totalEmAbertoAteHoje)}
             />
           </section>
 
@@ -320,8 +544,8 @@ export default function FinanceiroPage() {
             ) : null}
 
             <div className="mt-5 grid gap-3">
-              {ordens.length > 0 ? (
-                ordens.map((ordem) => (
+              {filteredOrdens.length > 0 ? (
+                filteredOrdens.map((ordem) => (
                   <article
                     className="grid gap-4 rounded-xl border border-slate-200 p-4 lg:grid-cols-[1fr_auto_auto] lg:items-center"
                     key={ordem.id}
@@ -332,6 +556,9 @@ export default function FinanceiroPage() {
                       </strong>
                       <span className="mt-1 block text-sm text-slate-500">
                         {clientesById[ordem.cliente_id ?? '']?.nome ?? 'Cliente nao informado'}
+                      </span>
+                      <span className="mt-1 block text-sm text-slate-500">
+                        {veiculosById[ordem.veiculo_id ?? '']?.modelo ?? 'Veiculo nao informado'}
                       </span>
                       <span className="mt-1 block text-xs font-bold uppercase tracking-[0.12em] text-orange-600">
                         {pagamentoStatusLabels[ordem.pagamento_status] ?? ordem.pagamento_status}
