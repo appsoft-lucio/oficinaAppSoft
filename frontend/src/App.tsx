@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import ClientesPage from './pages/ClientesPage/ClientesPage'
 import DashboardPage from './pages/DashboardPage/DashboardPage'
+import FinanceiroPage from './pages/FinanceiroPage/FinanceiroPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage'
 import HomePage from './pages/HomePage/HomePage'
 import LoginPage from './pages/LoginPage/LoginPage'
@@ -43,6 +44,14 @@ function App() {
         element={
           <ProtectedRoute>
             <VeiculosPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/financeiro"
+        element={
+          <ProtectedRoute>
+            <FinanceiroPage />
           </ProtectedRoute>
         }
       />

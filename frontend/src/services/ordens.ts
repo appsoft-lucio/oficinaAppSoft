@@ -7,6 +7,7 @@ export type OrdemServico = {
   titulo: string
   descricao: string | null
   status: string
+  pagamento_status: string
   valor: number
   created_at: string
 }
@@ -26,10 +27,18 @@ type UpdateOrdemStatusParams = {
   status: string
 }
 
+type UpdateOrdemPagamentoStatusParams = {
+  ordemId: string
+  pagamentoStatus: string
+}
+
+const ordemSelect =
+  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, valor, created_at'
+
 export async function listOrdens(oficinaId: string) {
   const { data, error } = await supabase
     .from('ordens_servico')
-    .select('id, cliente_id, veiculo_id, titulo, descricao, status, valor, created_at')
+    .select(ordemSelect)
     .eq('oficina_id', oficinaId)
     .order('created_at', { ascending: false })
 
@@ -57,12 +66,13 @@ export async function createOrdem({
       cliente_id: clienteId,
       descricao: descricao || null,
       oficina_id: oficinaId,
+      pagamento_status: 'em_aberto',
       status,
       titulo,
       valor: Number.isNaN(parsedValor) ? 0 : parsedValor,
       veiculo_id: veiculoId,
     })
-    .select('id, cliente_id, veiculo_id, titulo, descricao, status, valor, created_at')
+    .select(ordemSelect)
     .single()
 
   if (error) {
@@ -77,7 +87,25 @@ export async function updateOrdemStatus({ ordemId, status }: UpdateOrdemStatusPa
     .from('ordens_servico')
     .update({ status })
     .eq('id', ordemId)
-    .select('id, cliente_id, veiculo_id, titulo, descricao, status, valor, created_at')
+    .select(ordemSelect)
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
+export async function updateOrdemPagamentoStatus({
+  ordemId,
+  pagamentoStatus,
+}: UpdateOrdemPagamentoStatusParams) {
+  const { data, error } = await supabase
+    .from('ordens_servico')
+    .update({ pagamento_status: pagamentoStatus })
+    .eq('id', ordemId)
+    .select(ordemSelect)
     .single()
 
   if (error) {
