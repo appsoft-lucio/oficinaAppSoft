@@ -3,6 +3,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 import ClientesPage from './pages/ClientesPage/ClientesPage'
 import DashboardPage from './pages/DashboardPage/DashboardPage'
 import FinanceiroPage from './pages/FinanceiroPage/FinanceiroPage'
+import FiscalPage from './pages/FiscalPage/FiscalPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage'
 import HomePage from './pages/HomePage/HomePage'
 import LoginPage from './pages/LoginPage/LoginPage'
@@ -52,6 +53,14 @@ function App() {
         element={
           <ProtectedRoute>
             <FinanceiroPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/fiscal"
+        element={
+          <ProtectedRoute>
+            <FiscalPage />
           </ProtectedRoute>
         }
       />

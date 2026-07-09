@@ -8,6 +8,7 @@ const menuItems = [
   { label: 'Clientes', to: '/clientes' },
   { label: 'Veiculos', to: '/veiculos' },
   { label: 'Financeiro', to: '/financeiro' },
+  { label: 'Fiscal', to: '/fiscal' },
 ]
 
 type DashboardSidebarProps = {
