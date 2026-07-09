@@ -1,5 +1,6 @@
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import logoAppSoft from '../../assets/logo-appsoft-orange-semFundo.png'
+import { supabase } from '../../lib/supabase'
 
 const menuItems = [
   { label: 'Dashboard', to: '/dashboard' },
@@ -14,6 +15,13 @@ type DashboardSidebarProps = {
 }
 
 export default function DashboardSidebar({ oficinaName }: DashboardSidebarProps) {
+  const navigate = useNavigate()
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    navigate('/login')
+  }
+
   return (
     <aside className="flex min-h-screen flex-col bg-slate-950 px-5 py-6 text-white">
       <Link to="/">
@@ -46,12 +54,13 @@ export default function DashboardSidebar({ oficinaName }: DashboardSidebarProps)
         ))}
       </nav>
 
-      <Link
+      <button
         className="mt-auto rounded-lg border border-slate-800 px-4 py-3 text-sm font-black text-slate-300 transition hover:border-orange-500 hover:text-orange-400"
-        to="/login"
+        onClick={handleLogout}
+        type="button"
       >
         Sair
-      </Link>
+      </button>
     </aside>
   )
 }
