@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import AuthField from '../../components/auth/AuthField'
 import AuthLayout from '../../components/auth/AuthLayout'
 import { supabase } from '../../lib/supabase'
+import { ensureUserOficina } from '../../services/oficinas'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -22,18 +23,31 @@ export default function LoginPage() {
       return
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    setIsSubmitting(false)
-
     if (error) {
+      setIsSubmitting(false)
       setMessage('Nao foi possivel entrar. Confira o e-mail e a senha.')
       return
     }
 
+    if (data.user) {
+      try {
+        await ensureUserOficina({
+          fallbackName: 'Oficina Demonstracao',
+          userId: data.user.id,
+        })
+      } catch {
+        setIsSubmitting(false)
+        setMessage('Login feito, mas nao foi possivel preparar a oficina.')
+        return
+      }
+    }
+
+    setIsSubmitting(false)
     navigate('/dashboard')
   }
 

@@ -1,13 +1,32 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
 import DashboardTopbar from '../../components/dashboard/DashboardTopbar'
 import OrdersPanel from '../../components/dashboard/OrdersPanel'
 import SchedulePanel from '../../components/dashboard/SchedulePanel'
 import SummaryCard from '../../components/dashboard/SummaryCard'
 import { dashboardSummary } from '../../data/dashboard'
+import { supabase } from '../../lib/supabase'
+import { ensureUserOficina } from '../../services/oficinas'
 
 export default function DashboardPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  useEffect(() => {
+    async function prepareOficina() {
+      const { data } = await supabase.auth.getUser()
+
+      if (!data.user) {
+        return
+      }
+
+      await ensureUserOficina({
+        fallbackName: 'Oficina Demonstracao',
+        userId: data.user.id,
+      })
+    }
+
+    prepareOficina()
+  }, [])
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950 lg:grid lg:grid-cols-[280px_1fr]">
