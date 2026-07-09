@@ -17,15 +17,16 @@ export default function ContactSection() {
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row lg:mt-0">
           <a
-            className="inline-flex min-h-12 items-center justify-center rounded-lg bg-white px-6 text-[15px] font-black text-orange-700 transition hover:bg-orange-50"
-            href="https://wa.me/"
+            className="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#25d366] px-6 text-[15px] font-black text-white shadow-lg shadow-green-900/20 transition hover:bg-[#1ebe5d]"
+            href="https://wa.me/5531983044087"
+            rel="noreferrer"
             target="_blank"
           >
             Chamar no WhatsApp
           </a>
           <a
             className="inline-flex min-h-12 items-center justify-center rounded-lg border border-orange-200 px-6 text-[15px] font-black text-white transition hover:bg-orange-500"
-            href="mailto:contato@appsoft.com"
+            href="mailto:luciocdesouza@gmail.com"
           >
             Enviar e-mail
           </a>

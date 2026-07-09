@@ -5,6 +5,11 @@ export const navLinks = [
   { label: 'Contato', href: '#contato' },
 ]
 
+export const creatorLinks = [
+  { label: 'Lucio Junior', href: 'https://appsoft-lucio.github.io/lucio-junior/' },
+  { label: 'AppSoft Agency', href: 'https://appsoft-lucio.github.io/appsoft-agency/' },
+]
+
 export const dashboardMetrics = [
   { label: 'Ordens abertas', value: '24' },
   { label: 'Clientes ativos', value: '128' },
