@@ -6,10 +6,12 @@ import SchedulePanel from '../../components/dashboard/SchedulePanel'
 import SummaryCard from '../../components/dashboard/SummaryCard'
 import { dashboardSummary } from '../../data/dashboard'
 import { supabase } from '../../lib/supabase'
-import { ensureUserOficina } from '../../services/oficinas'
+import { ensureUserOficina, type Oficina } from '../../services/oficinas'
 
 export default function DashboardPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [oficina, setOficina] = useState<Oficina | null>(null)
+  const oficinaName = oficina?.nome ?? 'Oficina Demonstracao'
 
   useEffect(() => {
     async function prepareOficina() {
@@ -19,10 +21,12 @@ export default function DashboardPage() {
         return
       }
 
-      await ensureUserOficina({
+      const preparedOficina = await ensureUserOficina({
         fallbackName: 'Oficina Demonstracao',
         userId: data.user.id,
       })
+
+      setOficina(preparedOficina)
     }
 
     prepareOficina()
@@ -58,13 +62,13 @@ export default function DashboardPage() {
                 <path d="M18 6L6 18" />
               </svg>
             </button>
-            <DashboardSidebar />
+            <DashboardSidebar oficinaName={oficinaName} />
           </div>
         </div>
       ) : null}
 
       <div className="hidden lg:block">
-        <DashboardSidebar />
+        <DashboardSidebar oficinaName={oficinaName} />
       </div>
 
       <section className="min-w-0">
@@ -75,7 +79,9 @@ export default function DashboardPage() {
             <p className="text-sm font-black uppercase tracking-[0.16em] text-orange-400">
               Visão geral
             </p>
-            <h2 className="mt-2 text-2xl font-black">Olá, Lucio. A oficina está em movimento.</h2>
+            <h2 className="mt-2 text-2xl font-black">
+              Ola. A {oficinaName} esta em movimento.
+            </h2>
             <p className="mt-2 max-w-3xl text-slate-300">
               Esta é a primeira tela logada do app. Os dados ainda são demonstrativos, mas
               a estrutura já está pronta para conectar com Supabase.

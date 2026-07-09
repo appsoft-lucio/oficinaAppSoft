@@ -1,9 +1,13 @@
 import { Link } from 'react-router-dom'
 import logoAppSoft from '../../assets/logo-appsoft-orange-semFundo.png'
 
-const menuItems = ['Dashboard', 'Ordens', 'Clientes', 'Veículos', 'Financeiro']
+const menuItems = ['Dashboard', 'Ordens', 'Clientes', 'Veiculos', 'Financeiro']
 
-export default function DashboardSidebar() {
+type DashboardSidebarProps = {
+  oficinaName: string
+}
+
+export default function DashboardSidebar({ oficinaName }: DashboardSidebarProps) {
   return (
     <aside className="flex min-h-screen flex-col bg-slate-950 px-5 py-6 text-white">
       <Link to="/">
@@ -14,7 +18,7 @@ export default function DashboardSidebar() {
         <p className="text-xs font-black uppercase tracking-[0.16em] text-orange-400">
           Oficina
         </p>
-        <strong className="mt-1 block text-lg font-black">Demonstração</strong>
+        <strong className="mt-1 block text-lg font-black">{oficinaName}</strong>
         <span className="text-sm text-slate-400">Plano inicial</span>
       </div>
 

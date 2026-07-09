@@ -5,13 +5,18 @@ type EnsureUserOficinaParams = {
   fallbackName?: string
 }
 
+export type Oficina = {
+  id: string
+  nome: string
+}
+
 export async function ensureUserOficina({
   fallbackName = 'Oficina Demonstracao',
   userId,
 }: EnsureUserOficinaParams) {
   const { data: oficina, error: selectError } = await supabase
     .from('oficinas')
-    .select('id')
+    .select('id, nome')
     .eq('dono_id', userId)
     .maybeSingle()
 
@@ -29,7 +34,7 @@ export async function ensureUserOficina({
       dono_id: userId,
       nome: fallbackName,
     })
-    .select('id')
+    .select('id, nome')
     .single()
 
   if (insertError) {
