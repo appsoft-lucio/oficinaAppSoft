@@ -103,6 +103,38 @@ function getPeriodRange(period: string, customStartDate: string, customEndDate: 
   }
 }
 
+function parseCurrencyInput(value: string) {
+  const parsedValue = Number(value.replace(',', '.'))
+
+  return Number.isNaN(parsedValue) ? 0 : parsedValue
+}
+
+function getValorRecebido(ordem: OrdemServico) {
+  const valor = Number(ordem.valor)
+  const valorPago = Math.min(Math.max(Number(ordem.valor_pago), 0), valor)
+
+  if (ordem.pagamento_status === 'pago') {
+    return valor
+  }
+
+  if (ordem.pagamento_status === 'parcial') {
+    return valorPago
+  }
+
+  return 0
+}
+
+function getValorEmAberto(ordem: OrdemServico) {
+  return Math.max(Number(ordem.valor) - getValorRecebido(ordem), 0)
+}
+
+function buildPartialPayments(ordens: OrdemServico[]) {
+  return ordens.reduce<Record<string, string>>((acc, ordem) => {
+    acc[ordem.id] = String(Number(ordem.valor_pago || 0))
+    return acc
+  }, {})
+}
+
 export default function FinanceiroPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [customEndDate, setCustomEndDate] = useState(getDateInputValue(new Date()))
@@ -115,6 +147,7 @@ export default function FinanceiroPage() {
   const [oficina, setOficina] = useState<Oficina | null>(null)
   const [ordens, setOrdens] = useState<OrdemServico[]>([])
   const [pagamentoFilter, setPagamentoFilter] = useState('todos')
+  const [partialPayments, setPartialPayments] = useState<Record<string, string>>({})
   const [periodFilter, setPeriodFilter] = useState('mes_atual')
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [veiculoFilter, setVeiculoFilter] = useState('todos')
@@ -159,27 +192,19 @@ export default function FinanceiroPage() {
   ])
 
   const totalRecebido = useMemo(() => {
-    return filteredOrdens
-      .filter((ordem) => ordem.pagamento_status === 'pago')
-      .reduce((total, ordem) => total + Number(ordem.valor), 0)
+    return filteredOrdens.reduce((total, ordem) => total + getValorRecebido(ordem), 0)
   }, [filteredOrdens])
 
   const totalRecebidoAteHoje = useMemo(() => {
-    return ordens
-      .filter((ordem) => ordem.pagamento_status === 'pago')
-      .reduce((total, ordem) => total + Number(ordem.valor), 0)
+    return ordens.reduce((total, ordem) => total + getValorRecebido(ordem), 0)
   }, [ordens])
 
   const totalEmAberto = useMemo(() => {
-    return filteredOrdens
-      .filter((ordem) => ordem.pagamento_status !== 'pago')
-      .reduce((total, ordem) => total + Number(ordem.valor), 0)
+    return filteredOrdens.reduce((total, ordem) => total + getValorEmAberto(ordem), 0)
   }, [filteredOrdens])
 
   const totalEmAbertoAteHoje = useMemo(() => {
-    return ordens
-      .filter((ordem) => ordem.pagamento_status !== 'pago')
-      .reduce((total, ordem) => total + Number(ordem.valor), 0)
+    return ordens.reduce((total, ordem) => total + getValorEmAberto(ordem), 0)
   }, [ordens])
 
   const totalPrevisto = useMemo(() => {
@@ -216,11 +241,8 @@ export default function FinanceiroPage() {
       acc[monthKey].ordens += 1
       acc[monthKey].previsto += valorOrdem
 
-      if (ordem.pagamento_status === 'pago') {
-        acc[monthKey].recebido += valorOrdem
-      } else {
-        acc[monthKey].aberto += valorOrdem
-      }
+      acc[monthKey].recebido += getValorRecebido(ordem)
+      acc[monthKey].aberto += getValorEmAberto(ordem)
 
       return acc
     }, {})
@@ -270,6 +292,7 @@ export default function FinanceiroPage() {
 
       setClientes(loadedClientes)
       setOrdens(loadedOrdens)
+      setPartialPayments(buildPartialPayments(loadedOrdens))
       setVeiculos(loadedVeiculos)
     }
 
@@ -278,19 +301,67 @@ export default function FinanceiroPage() {
 
   async function handlePagamentoStatusChange(ordemId: string, pagamentoStatus: string) {
     setMessage('')
+    const currentOrdem = ordens.find((ordem) => ordem.id === ordemId)
+
+    if (!currentOrdem) {
+      return
+    }
+
+    const nextValorPago =
+      pagamentoStatus === 'pago'
+        ? Number(currentOrdem.valor)
+        : pagamentoStatus === 'em_aberto'
+          ? 0
+          : Number(currentOrdem.valor_pago)
 
     try {
       const updatedOrdem = await updateOrdemPagamentoStatus({
         ordemId,
         pagamentoStatus,
+        valorPago: nextValorPago,
       })
 
       setOrdens((currentOrdens) =>
         currentOrdens.map((ordem) => (ordem.id === ordemId ? updatedOrdem : ordem)),
       )
+      setPartialPayments((currentValues) => ({
+        ...currentValues,
+        [ordemId]: String(Number(updatedOrdem.valor_pago || 0)),
+      }))
       setMessage('Status de pagamento atualizado.')
     } catch {
       setMessage('Nao foi possivel atualizar o pagamento.')
+    }
+  }
+
+  async function handlePartialPaymentSave(ordem: OrdemServico) {
+    setMessage('')
+    const valorOrdem = Number(ordem.valor)
+    const valorPago = Math.min(
+      Math.max(parseCurrencyInput(partialPayments[ordem.id] ?? '0'), 0),
+      valorOrdem,
+    )
+    const nextStatus = valorPago >= valorOrdem ? 'pago' : valorPago > 0 ? 'parcial' : 'em_aberto'
+
+    try {
+      const updatedOrdem = await updateOrdemPagamentoStatus({
+        ordemId: ordem.id,
+        pagamentoStatus: nextStatus,
+        valorPago,
+      })
+
+      setOrdens((currentOrdens) =>
+        currentOrdens.map((currentOrdem) =>
+          currentOrdem.id === ordem.id ? updatedOrdem : currentOrdem,
+        ),
+      )
+      setPartialPayments((currentValues) => ({
+        ...currentValues,
+        [ordem.id]: String(Number(updatedOrdem.valor_pago || 0)),
+      }))
+      setMessage('Valor parcial atualizado.')
+    } catch {
+      setMessage('Nao foi possivel salvar o valor parcial.')
     }
   }
 
@@ -565,23 +636,54 @@ export default function FinanceiroPage() {
                       </span>
                     </div>
 
-                    <strong className="text-lg font-black text-slate-950">
-                      {formatCurrency(Number(ordem.valor))}
-                    </strong>
+                    <div className="min-w-36 text-left lg:text-right">
+                      <strong className="block text-lg font-black text-slate-950">
+                        {formatCurrency(Number(ordem.valor))}
+                      </strong>
+                      <span className="mt-1 block text-sm font-bold text-emerald-700">
+                        Recebido: {formatCurrency(getValorRecebido(ordem))}
+                      </span>
+                      <span className="mt-1 block text-sm font-bold text-orange-700">
+                        Aberto: {formatCurrency(getValorEmAberto(ordem))}
+                      </span>
+                    </div>
 
-                    <select
-                      className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm font-black text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
-                      onChange={(event) =>
-                        handlePagamentoStatusChange(ordem.id, event.target.value)
-                      }
-                      value={ordem.pagamento_status}
-                    >
-                      {pagamentoStatusOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="grid gap-2 sm:min-w-52">
+                      <select
+                        className="h-11 rounded-lg border border-slate-300 bg-white px-3 text-sm font-black text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                        onChange={(event) =>
+                          handlePagamentoStatusChange(ordem.id, event.target.value)
+                        }
+                        value={ordem.pagamento_status}
+                      >
+                        {pagamentoStatusOptions.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+
+                      {ordem.pagamento_status === 'parcial' ? (
+                        <label className="block">
+                          <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">
+                            Valor pago
+                          </span>
+                          <input
+                            className="mt-1 h-10 w-full rounded-lg border border-slate-300 px-3 text-sm font-black text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                            inputMode="decimal"
+                            onBlur={() => handlePartialPaymentSave(ordem)}
+                            onChange={(event) =>
+                              setPartialPayments((currentValues) => ({
+                                ...currentValues,
+                                [ordem.id]: event.target.value,
+                              }))
+                            }
+                            placeholder="0,00"
+                            value={partialPayments[ordem.id] ?? ''}
+                          />
+                        </label>
+                      ) : null}
+                    </div>
                   </article>
                 ))
               ) : (

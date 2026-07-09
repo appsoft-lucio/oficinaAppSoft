@@ -9,6 +9,7 @@ export type OrdemServico = {
   status: string
   pagamento_status: string
   valor: number
+  valor_pago: number
   created_at: string
 }
 
@@ -30,10 +31,11 @@ type UpdateOrdemStatusParams = {
 type UpdateOrdemPagamentoStatusParams = {
   ordemId: string
   pagamentoStatus: string
+  valorPago?: number
 }
 
 const ordemSelect =
-  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, valor, created_at'
+  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, valor, valor_pago, created_at'
 
 export async function listOrdens(oficinaId: string) {
   const { data, error } = await supabase
@@ -70,6 +72,7 @@ export async function createOrdem({
       status,
       titulo,
       valor: Number.isNaN(parsedValor) ? 0 : parsedValor,
+      valor_pago: 0,
       veiculo_id: veiculoId,
     })
     .select(ordemSelect)
@@ -100,10 +103,22 @@ export async function updateOrdemStatus({ ordemId, status }: UpdateOrdemStatusPa
 export async function updateOrdemPagamentoStatus({
   ordemId,
   pagamentoStatus,
+  valorPago,
 }: UpdateOrdemPagamentoStatusParams) {
+  const updatePayload: {
+    pagamento_status: string
+    valor_pago?: number
+  } = {
+    pagamento_status: pagamentoStatus,
+  }
+
+  if (valorPago !== undefined) {
+    updatePayload.valor_pago = valorPago
+  }
+
   const { data, error } = await supabase
     .from('ordens_servico')
-    .update({ pagamento_status: pagamentoStatus })
+    .update(updatePayload)
     .eq('id', ordemId)
     .select(ordemSelect)
     .single()
