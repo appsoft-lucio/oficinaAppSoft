@@ -12,13 +12,25 @@ export default function LoginPage() {
       <div>
         <h2 className="text-2xl font-black text-slate-950">Entrar</h2>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Use seu e-mail e senha cadastrados para acessar a demonstração.
+          Use os dados preenchidos para acessar a demonstração.
         </p>
       </div>
 
       <form className="mt-8 space-y-5">
-        <AuthField label="E-mail" name="email" placeholder="seuemail@exemplo.com" type="email" />
-        <AuthField label="Senha" name="password" placeholder="Sua senha" type="password" />
+        <AuthField
+          defaultValue="demo@appsoft.com"
+          label="E-mail"
+          name="email"
+          placeholder="seuemail@exemplo.com"
+          type="email"
+        />
+        <AuthField
+          defaultValue="123456"
+          label="Senha"
+          name="password"
+          placeholder="Sua senha"
+          type="password"
+        />
 
         <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
           <Link
@@ -32,12 +44,12 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        <button
-          className="min-h-12 w-full rounded-lg bg-orange-600 px-6 font-black text-white transition hover:bg-orange-700"
-          type="button"
+        <Link
+          className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-orange-600 px-6 font-black text-white transition hover:bg-orange-700"
+          to="/dashboard"
         >
           Entrar no painel
-        </button>
+        </Link>
       </form>
     </AuthLayout>
   )

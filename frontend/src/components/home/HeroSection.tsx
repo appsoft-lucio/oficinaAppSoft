@@ -14,6 +14,11 @@ export default function HeroSection() {
           Organize clientes, veículos, ordens de serviço, pagamentos e relatórios em um
           painel simples para o dia a dia da mecânica.
         </p>
+        <p className="mt-4 max-w-xl text-[15px] font-bold leading-7 text-slate-500">
+          Uma base moderna para apresentar a solução, validar com clientes e evoluir para
+          um sistema completo com dados reais.
+        </p>
+
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <a
             className="inline-flex min-h-12 items-center justify-center rounded-lg bg-orange-600 px-6 text-[15px] font-black text-white shadow-lg shadow-orange-600/20 transition hover:bg-orange-700"

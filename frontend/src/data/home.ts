@@ -10,6 +10,12 @@ export const creatorLinks = [
   { label: 'AppSoft Agency', href: 'https://appsoft-lucio.github.io/appsoft-agency/' },
 ]
 
+export const trustIndicators = [
+  { label: 'Fluxo pensado para oficinas', value: 'OS + cliente + veículo' },
+  { label: 'Primeira versão', value: 'Landing + auth + dashboard' },
+  { label: 'Próximo passo', value: 'Supabase e dados reais' },
+]
+
 export const dashboardMetrics = [
   { label: 'Ordens abertas', value: '24' },
   { label: 'Clientes ativos', value: '128' },
