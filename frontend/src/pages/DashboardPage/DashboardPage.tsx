@@ -4,13 +4,26 @@ import DashboardTopbar from '../../components/dashboard/DashboardTopbar'
 import OrdersPanel from '../../components/dashboard/OrdersPanel'
 import SchedulePanel from '../../components/dashboard/SchedulePanel'
 import SummaryCard from '../../components/dashboard/SummaryCard'
-import { dashboardSummary } from '../../data/dashboard'
 import { supabase } from '../../lib/supabase'
+import type { Cliente } from '../../services/clientes'
+import { getDashboardData } from '../../services/dashboard'
 import { ensureUserOficina, type Oficina } from '../../services/oficinas'
+import type { OrdemServico } from '../../services/ordens'
+import type { Veiculo } from '../../services/veiculos'
+
+type DashboardSummaryItem = {
+  detail: string
+  label: string
+  value: string
+}
 
 export default function DashboardPage() {
+  const [clientes, setClientes] = useState<Cliente[]>([])
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [oficina, setOficina] = useState<Oficina | null>(null)
+  const [ordens, setOrdens] = useState<OrdemServico[]>([])
+  const [summary, setSummary] = useState<DashboardSummaryItem[]>([])
+  const [veiculos, setVeiculos] = useState<Veiculo[]>([])
   const oficinaName = oficina?.nome ?? 'Oficina Demonstracao'
 
   useEffect(() => {
@@ -27,6 +40,13 @@ export default function DashboardPage() {
       })
 
       setOficina(preparedOficina)
+
+      const dashboardData = await getDashboardData(preparedOficina.id)
+
+      setClientes(dashboardData.clientes)
+      setOrdens(dashboardData.ordens)
+      setSummary(dashboardData.summary)
+      setVeiculos(dashboardData.veiculos)
     }
 
     prepareOficina()
@@ -96,14 +116,14 @@ export default function DashboardPage() {
           </section>
 
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {dashboardSummary.map((item) => (
+            {summary.map((item) => (
               <SummaryCard key={item.label} {...item} />
             ))}
           </section>
 
           <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_360px]">
-            <OrdersPanel />
-            <SchedulePanel />
+            <OrdersPanel clientes={clientes} ordens={ordens} veiculos={veiculos} />
+            <SchedulePanel ordens={ordens} />
           </div>
         </div>
       </section>
