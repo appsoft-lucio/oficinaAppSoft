@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
+import ProtectedRoute from './components/auth/ProtectedRoute'
 import ClientesPage from './pages/ClientesPage/ClientesPage'
 import DashboardPage from './pages/DashboardPage/DashboardPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage'
@@ -13,10 +14,38 @@ function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/dashboard" element={<DashboardPage />} />
-      <Route path="/ordens" element={<OrdensPage />} />
-      <Route path="/clientes" element={<ClientesPage />} />
-      <Route path="/veiculos" element={<VeiculosPage />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/ordens"
+        element={
+          <ProtectedRoute>
+            <OrdensPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/clientes"
+        element={
+          <ProtectedRoute>
+            <ClientesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/veiculos"
+        element={
+          <ProtectedRoute>
+            <VeiculosPage />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/criar-conta" element={<RegisterPage />} />
       <Route path="/esqueci-minha-senha" element={<ForgotPasswordPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />

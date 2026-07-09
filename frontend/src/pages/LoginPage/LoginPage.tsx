@@ -7,8 +7,8 @@ import { ensureUserOficina } from '../../services/oficinas'
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('demo@appsoft.com')
-  const [password, setPassword] = useState('123456')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -16,12 +16,6 @@ export default function LoginPage() {
     event.preventDefault()
     setMessage('')
     setIsSubmitting(true)
-
-    if (email === 'demo@appsoft.com' && password === '123456') {
-      setIsSubmitting(false)
-      navigate('/dashboard')
-      return
-    }
 
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
@@ -60,7 +54,7 @@ export default function LoginPage() {
       <div>
         <h2 className="text-2xl font-black text-slate-950">Entrar</h2>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Use os dados preenchidos para acessar a demonstracao.
+          Use sua conta cadastrada para acessar o painel.
         </p>
       </div>
 
