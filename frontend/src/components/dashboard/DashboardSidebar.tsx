@@ -36,7 +36,7 @@ export default function DashboardSidebar() {
 
       <Link
         className="mt-auto rounded-lg border border-slate-800 px-4 py-3 text-sm font-black text-slate-300 transition hover:border-orange-500 hover:text-orange-400"
-        to="/"
+        to="/login"
       >
         Sair
       </Link>

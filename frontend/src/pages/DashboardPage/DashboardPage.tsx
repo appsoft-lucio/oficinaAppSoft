@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
 import DashboardTopbar from '../../components/dashboard/DashboardTopbar'
 import OrdersPanel from '../../components/dashboard/OrdersPanel'
@@ -6,14 +7,49 @@ import SummaryCard from '../../components/dashboard/SummaryCard'
 import { dashboardSummary } from '../../data/dashboard'
 
 export default function DashboardPage() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
+
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950 lg:grid lg:grid-cols-[280px_1fr]">
+      {isMenuOpen ? (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <button
+            aria-label="Fechar menu"
+            className="absolute inset-0 bg-slate-950/60"
+            onClick={() => setIsMenuOpen(false)}
+            type="button"
+          />
+          <div className="relative h-full w-[min(82vw,320px)] shadow-2xl">
+            <button
+              aria-label="Fechar menu"
+              className="absolute right-4 top-4 z-10 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-white/10 text-white transition hover:bg-white/20"
+              onClick={() => setIsMenuOpen(false)}
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M6 6l12 12" />
+                <path d="M18 6L6 18" />
+              </svg>
+            </button>
+            <DashboardSidebar />
+          </div>
+        </div>
+      ) : null}
+
       <div className="hidden lg:block">
         <DashboardSidebar />
       </div>
 
       <section className="min-w-0">
-        <DashboardTopbar />
+        <DashboardTopbar onOpenMenu={() => setIsMenuOpen(true)} />
 
         <div className="px-5 py-6 sm:px-8">
           <section className="mb-6 rounded-2xl bg-slate-950 p-6 text-white">
