@@ -72,7 +72,14 @@ export default function DashboardPage() {
       </div>
 
       <section className="min-w-0">
-        <DashboardTopbar onOpenMenu={() => setIsMenuOpen(true)} />
+        <DashboardTopbar onOpenMenu={() => setIsMenuOpen(true)}>
+          <button className="min-h-11 rounded-lg border border-slate-300 bg-white px-5 text-sm font-black text-slate-700 transition hover:bg-slate-50">
+            Exportar relatorio
+          </button>
+          <button className="min-h-11 rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700">
+            Nova ordem
+          </button>
+        </DashboardTopbar>
 
         <div className="px-5 py-6 sm:px-8">
           <section className="mb-6 rounded-2xl bg-slate-950 p-6 text-white">

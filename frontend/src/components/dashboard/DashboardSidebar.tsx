@@ -1,7 +1,13 @@
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import logoAppSoft from '../../assets/logo-appsoft-orange-semFundo.png'
 
-const menuItems = ['Dashboard', 'Ordens', 'Clientes', 'Veiculos', 'Financeiro']
+const menuItems = [
+  { label: 'Dashboard', to: '/dashboard' },
+  { label: 'Ordens', to: '/ordens' },
+  { label: 'Clientes', to: '/clientes' },
+  { label: 'Veiculos', to: '/veiculos' },
+  { label: 'Financeiro', to: '/financeiro' },
+]
 
 type DashboardSidebarProps = {
   oficinaName: string
@@ -24,17 +30,19 @@ export default function DashboardSidebar({ oficinaName }: DashboardSidebarProps)
 
       <nav className="mt-8 grid gap-2">
         {menuItems.map((item) => (
-          <button
-            className={`rounded-lg px-4 py-3 text-left text-sm font-black transition ${
-              item === 'Dashboard'
-                ? 'bg-orange-600 text-white'
-                : 'text-slate-300 hover:bg-white/5 hover:text-white'
-            }`}
-            key={item}
-            type="button"
+          <NavLink
+            className={({ isActive }) =>
+              `rounded-lg px-4 py-3 text-left text-sm font-black transition ${
+                isActive
+                  ? 'bg-orange-600 text-white'
+                  : 'text-slate-300 hover:bg-white/5 hover:text-white'
+              }`
+            }
+            key={item.to}
+            to={item.to}
           >
-            {item}
-          </button>
+            {item.label}
+          </NavLink>
         ))}
       </nav>
 
