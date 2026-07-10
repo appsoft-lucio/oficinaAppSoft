@@ -60,6 +60,20 @@ export async function listOrdens(oficinaId: string) {
   return data
 }
 
+export async function getOrdem(ordemId: string) {
+  const { data, error } = await supabase
+    .from('ordens_servico')
+    .select(ordemSelect)
+    .eq('id', ordemId)
+    .single()
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
 export async function createOrdem({
   clienteId,
   descricao,

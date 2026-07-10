@@ -348,6 +348,20 @@ export default function OrdensPage() {
                         <strong className="text-sm font-black text-slate-950">
                           R$ {Number(ordem.valor).toFixed(2)}
                         </strong>
+                        <div className="flex flex-wrap gap-2 sm:justify-end">
+                          <Link
+                            className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-50"
+                            to={`/documentos/${ordem.id}/orcamento`}
+                          >
+                            Orcamento
+                          </Link>
+                          <Link
+                            className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-black text-white transition hover:bg-slate-800"
+                            to={`/documentos/${ordem.id}/nota-simples`}
+                          >
+                            Nota simples
+                          </Link>
+                        </div>
                       </div>
                     </div>
                     {ordem.descricao ? (

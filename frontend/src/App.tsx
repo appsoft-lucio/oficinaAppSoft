@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import ClientesPage from './pages/ClientesPage/ClientesPage'
 import DashboardPage from './pages/DashboardPage/DashboardPage'
+import DocumentoPage from './pages/DocumentoPage/DocumentoPage'
 import FinanceiroPage from './pages/FinanceiroPage/FinanceiroPage'
 import FiscalPage from './pages/FiscalPage/FiscalPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage'
@@ -29,6 +30,14 @@ function App() {
         element={
           <ProtectedRoute>
             <OrdensPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/documentos/:ordemId/:tipo"
+        element={
+          <ProtectedRoute>
+            <DocumentoPage />
           </ProtectedRoute>
         }
       />
