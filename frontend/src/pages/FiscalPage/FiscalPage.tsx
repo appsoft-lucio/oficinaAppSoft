@@ -10,13 +10,13 @@ import { listVeiculos, type Veiculo } from '../../services/veiculos'
 
 const notaStatusOptions = [
   { label: 'Pendente', value: 'pendente' },
-  { label: 'Emitida', value: 'emitida' },
+  { label: 'Registrada', value: 'emitida' },
   { label: 'Cancelada', value: 'cancelada' },
 ]
 
 const notaStatusLabels: Record<string, string> = {
   cancelada: 'Cancelada',
-  emitida: 'Emitida',
+  emitida: 'Registrada',
   pendente: 'Pendente',
 }
 
@@ -155,7 +155,7 @@ export default function FiscalPage() {
         <DashboardTopbar
           eyebrow="Fiscal"
           onOpenMenu={() => setIsMenuOpen(true)}
-          title="Controle de notas"
+          title="Controle fiscal interno"
         >
           <select
             className="min-h-11 rounded-lg border border-slate-300 bg-white px-4 text-sm font-black text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
@@ -178,18 +178,30 @@ export default function FiscalPage() {
             </div>
           ) : null}
 
+          <section className="mb-6 rounded-2xl bg-slate-950 p-5 text-white shadow-sm">
+            <p className="text-xs font-black uppercase tracking-[0.18em] text-orange-400">
+              Emissao oficial ainda nao conectada
+            </p>
+            <h2 className="mt-2 text-2xl font-black">Controle interno antes da integracao fiscal</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
+              Esta tela registra o status fiscal da ordem dentro do sistema. A emissao oficial de
+              NF-e ou NFS-e depende de uma integracao segura com um emissor fiscal, usando backend,
+              certificado, CNPJ e regras da prefeitura ou SEFAZ.
+            </p>
+          </section>
+
           <section className="grid gap-4 sm:grid-cols-3">
-            <SummaryCard detail="Aguardando emissao" label="Pendentes" value={totalPendentes} />
-            <SummaryCard detail="Notas registradas" label="Emitidas" value={totalEmitidas} />
-            <SummaryCard detail="Notas anuladas" label="Canceladas" value={totalCanceladas} />
+            <SummaryCard detail="Aguardando controle" label="Pendentes" value={totalPendentes} />
+            <SummaryCard detail="Marcadas no sistema" label="Registradas" value={totalEmitidas} />
+            <SummaryCard detail="Marcadas como anuladas" label="Canceladas" value={totalCanceladas} />
           </section>
 
           <section className="mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="text-xl font-black">Ordens para nota fiscal</h2>
+                <h2 className="text-xl font-black">Ordens para controle fiscal</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Controle interno para preparar a futura integracao de emissao fiscal.
+                  Use para organizar o numero e o status da nota quando ela for emitida fora do app.
                 </p>
               </div>
               <strong className="text-sm font-black text-slate-700">
