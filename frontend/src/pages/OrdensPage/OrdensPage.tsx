@@ -21,6 +21,23 @@ const statusOptions = [
   { label: 'Cancelada', value: 'cancelada' },
 ]
 
+type PecaForm = {
+  descricao: string
+  quantidade: string
+  valorUnitario: string
+}
+
+const emptyPeca: PecaForm = {
+  descricao: '',
+  quantidade: '1',
+  valorUnitario: '',
+}
+
+function parseMoney(value: string) {
+  const parsedValue = Number(value.replace(',', '.'))
+  return Number.isNaN(parsedValue) ? 0 : parsedValue
+}
+
 export default function OrdensPage() {
   const [clienteId, setClienteId] = useState('')
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -30,6 +47,7 @@ export default function OrdensPage() {
   const [message, setMessage] = useState('')
   const [oficina, setOficina] = useState<Oficina | null>(null)
   const [ordens, setOrdens] = useState<OrdemServico[]>([])
+  const [pecas, setPecas] = useState<PecaForm[]>([{ ...emptyPeca }])
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [statusMessage, setStatusMessage] = useState('')
   const [status, setStatus] = useState('aberta')
@@ -56,6 +74,14 @@ export default function OrdensPage() {
   const filteredVeiculos = useMemo(() => {
     return veiculos.filter((veiculo) => veiculo.cliente_id === clienteId)
   }, [clienteId, veiculos])
+
+  const totalPecas = useMemo(() => {
+    return pecas.reduce((total, peca) => {
+      return total + parseMoney(peca.quantidade) * parseMoney(peca.valorUnitario)
+    }, 0)
+  }, [pecas])
+
+  const totalOrdem = parseMoney(valor) + totalPecas
 
   useEffect(() => {
     async function loadData() {
@@ -114,6 +140,7 @@ export default function OrdensPage() {
         clienteId,
         descricao,
         oficinaId: oficina.id,
+        pecas,
         status,
         titulo,
         valor,
@@ -122,6 +149,7 @@ export default function OrdensPage() {
 
       setOrdens((currentOrdens) => [createdOrdem, ...currentOrdens])
       setDescricao('')
+      setPecas([{ ...emptyPeca }])
       setStatus('aberta')
       setTitulo('')
       setValor('')
@@ -149,6 +177,28 @@ export default function OrdensPage() {
     } catch {
       setStatusMessage('Nao foi possivel atualizar o status.')
     }
+  }
+
+  function handlePecaChange(index: number, field: keyof PecaForm, value: string) {
+    setPecas((currentPecas) =>
+      currentPecas.map((peca, currentIndex) =>
+        currentIndex === index ? { ...peca, [field]: value } : peca,
+      ),
+    )
+  }
+
+  function handleAddPeca() {
+    setPecas((currentPecas) => [...currentPecas, { ...emptyPeca }])
+  }
+
+  function handleRemovePeca(index: number) {
+    setPecas((currentPecas) => {
+      if (currentPecas.length === 1) {
+        return [{ ...emptyPeca }]
+      }
+
+      return currentPecas.filter((_, currentIndex) => currentIndex !== index)
+    })
   }
 
   return (
@@ -273,7 +323,7 @@ export default function OrdensPage() {
                   </label>
 
                   <label className="block">
-                    <span className="text-sm font-black text-slate-700">Valor</span>
+                    <span className="text-sm font-black text-slate-700">Valor do servico</span>
                     <input
                       className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                       inputMode="decimal"
@@ -283,6 +333,84 @@ export default function OrdensPage() {
                     />
                   </label>
                 </div>
+
+                <section className="rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-base font-black text-slate-950">Pecas compradas</h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Liste as pecas que devem aparecer no orcamento e na nota simples.
+                      </p>
+                    </div>
+                    <button
+                      className="min-h-10 rounded-lg border border-slate-300 px-3 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+                      onClick={handleAddPeca}
+                      type="button"
+                    >
+                      Adicionar
+                    </button>
+                  </div>
+
+                  <div className="mt-4 grid gap-3">
+                    {pecas.map((peca, index) => (
+                      <div className="grid gap-3 rounded-lg bg-slate-50 p-3" key={index}>
+                        <label className="block">
+                          <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">
+                            Descricao
+                          </span>
+                          <input
+                            className="mt-1 h-11 w-full rounded-lg border border-slate-300 px-3 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                            onChange={(event) =>
+                              handlePecaChange(index, 'descricao', event.target.value)
+                            }
+                            placeholder="Ex: Amortecedor dianteiro"
+                            value={peca.descricao}
+                          />
+                        </label>
+                        <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+                          <label className="block">
+                            <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">
+                              Quantidade
+                            </span>
+                            <input
+                              className="mt-1 h-11 w-full rounded-lg border border-slate-300 px-3 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                              inputMode="decimal"
+                              onChange={(event) =>
+                                handlePecaChange(index, 'quantidade', event.target.value)
+                              }
+                              value={peca.quantidade}
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">
+                              Valor unitario
+                            </span>
+                            <input
+                              className="mt-1 h-11 w-full rounded-lg border border-slate-300 px-3 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                              inputMode="decimal"
+                              onChange={(event) =>
+                                handlePecaChange(index, 'valorUnitario', event.target.value)
+                              }
+                              placeholder="150,00"
+                              value={peca.valorUnitario}
+                            />
+                          </label>
+                          <button
+                            className="h-11 rounded-lg border border-slate-300 px-3 text-sm font-black text-slate-700 transition hover:bg-white"
+                            onClick={() => handleRemovePeca(index)}
+                            type="button"
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 rounded-lg bg-slate-950 px-4 py-3 text-sm font-black text-white">
+                    Total da ordem: R$ {totalOrdem.toFixed(2)}
+                  </div>
+                </section>
 
                 {message ? (
                   <p className="rounded-lg bg-orange-50 px-4 py-3 text-sm font-bold text-orange-700">

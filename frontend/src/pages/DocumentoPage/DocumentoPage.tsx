@@ -4,7 +4,12 @@ import logoAppSoft from '../../assets/logo-appsoft-orange-semFundo.png'
 import { supabase } from '../../lib/supabase'
 import { listClientes, type Cliente } from '../../services/clientes'
 import { ensureUserOficina, type Oficina } from '../../services/oficinas'
-import { getOrdem, type OrdemServico } from '../../services/ordens'
+import {
+  getOrdem,
+  listOrdemPecas,
+  type OrdemPeca,
+  type OrdemServico,
+} from '../../services/ordens'
 import { listVeiculos, type Veiculo } from '../../services/veiculos'
 
 function formatCurrency(value: number) {
@@ -18,6 +23,13 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'short',
   }).format(new Date(value))
+}
+
+function formatQuantity(value: number) {
+  return Number(value).toLocaleString('pt-BR', {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+  })
 }
 
 function getDocumentoTitle(tipo?: string) {
@@ -35,6 +47,7 @@ export default function DocumentoPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [oficina, setOficina] = useState<Oficina | null>(null)
   const [ordem, setOrdem] = useState<OrdemServico | null>(null)
+  const [pecas, setPecas] = useState<OrdemPeca[]>([])
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
   const documentoTitle = getDocumentoTitle(tipo)
   const isNotaSimples = tipo === 'nota-simples'
@@ -55,6 +68,11 @@ export default function DocumentoPage() {
 
   const cliente = ordem ? clientesById[ordem.cliente_id ?? ''] : null
   const veiculo = ordem ? veiculosById[ordem.veiculo_id ?? ''] : null
+  const totalPecas = pecas.reduce((total, peca) => {
+    return total + Number(peca.quantidade) * Number(peca.valor_unitario)
+  }, 0)
+  const valorServico = Number(ordem?.valor_servico ?? ordem?.valor ?? 0)
+  const valorTotal = valorServico + totalPecas
 
   useEffect(() => {
     async function loadDocumento() {
@@ -75,16 +93,18 @@ export default function DocumentoPage() {
         userId: data.user.id,
       })
 
-      const [loadedClientes, loadedVeiculos, loadedOrdem] = await Promise.all([
+      const [loadedClientes, loadedVeiculos, loadedOrdem, loadedPecas] = await Promise.all([
         listClientes(preparedOficina.id),
         listVeiculos(preparedOficina.id),
         getOrdem(ordemId),
+        listOrdemPecas(ordemId),
       ])
 
       setOficina(preparedOficina)
       setClientes(loadedClientes)
       setVeiculos(loadedVeiculos)
       setOrdem(loadedOrdem)
+      setPecas(loadedPecas)
       setIsLoading(false)
     }
 
@@ -200,7 +220,13 @@ export default function DocumentoPage() {
               <thead className="bg-slate-100">
                 <tr>
                   <th className="px-5 py-4 text-xs font-black uppercase tracking-[0.16em] text-slate-500">
-                    Servico
+                    Item
+                  </th>
+                  <th className="px-5 py-4 text-right text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+                    Qtd.
+                  </th>
+                  <th className="px-5 py-4 text-right text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+                    Unitario
                   </th>
                   <th className="px-5 py-4 text-right text-xs font-black uppercase tracking-[0.16em] text-slate-500">
                     Valor
@@ -211,24 +237,66 @@ export default function DocumentoPage() {
                 <tr>
                   <td className="px-5 py-5 align-top">
                     <strong className="block text-base font-black text-slate-950">
-                      {ordem.titulo}
+                      Servico: {ordem.titulo}
                     </strong>
                     <p className="mt-2 text-sm leading-6 text-slate-600">
                       {ordem.descricao || 'Sem descricao adicional.'}
                     </p>
                   </td>
+                  <td className="px-5 py-5 text-right align-top text-sm font-bold text-slate-600">
+                    1
+                  </td>
+                  <td className="px-5 py-5 text-right align-top text-sm font-bold text-slate-600">
+                    {formatCurrency(valorServico)}
+                  </td>
                   <td className="px-5 py-5 text-right align-top text-base font-black text-slate-950">
-                    {formatCurrency(Number(ordem.valor))}
+                    {formatCurrency(valorServico)}
                   </td>
                 </tr>
+                {pecas.map((peca) => {
+                  const subtotal = Number(peca.quantidade) * Number(peca.valor_unitario)
+
+                  return (
+                    <tr className="border-t border-slate-100" key={peca.id}>
+                      <td className="px-5 py-4 align-top">
+                        <strong className="block text-sm font-black text-slate-950">
+                          Peca: {peca.descricao}
+                        </strong>
+                      </td>
+                      <td className="px-5 py-4 text-right align-top text-sm font-bold text-slate-600">
+                        {formatQuantity(Number(peca.quantidade))}
+                      </td>
+                      <td className="px-5 py-4 text-right align-top text-sm font-bold text-slate-600">
+                        {formatCurrency(Number(peca.valor_unitario))}
+                      </td>
+                      <td className="px-5 py-4 text-right align-top text-sm font-black text-slate-950">
+                        {formatCurrency(subtotal)}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
               <tfoot className="bg-slate-50">
                 <tr>
-                  <td className="px-5 py-4 text-right text-sm font-black text-slate-700">
+                  <td
+                    className="px-5 py-3 text-right text-sm font-black text-slate-700"
+                    colSpan={3}
+                  >
+                    Pecas
+                  </td>
+                  <td className="px-5 py-3 text-right text-sm font-black text-slate-950">
+                    {formatCurrency(totalPecas)}
+                  </td>
+                </tr>
+                <tr>
+                  <td
+                    className="px-5 py-4 text-right text-sm font-black text-slate-700"
+                    colSpan={3}
+                  >
                     Total
                   </td>
                   <td className="px-5 py-4 text-right text-xl font-black text-slate-950">
-                    {formatCurrency(Number(ordem.valor))}
+                    {formatCurrency(valorTotal)}
                   </td>
                 </tr>
               </tfoot>

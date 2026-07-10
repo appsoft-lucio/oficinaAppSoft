@@ -12,8 +12,24 @@ export type OrdemServico = {
   nota_numero: string | null
   nota_emitida_em: string | null
   valor: number
+  valor_servico: number
   valor_pago: number
   created_at: string
+}
+
+export type OrdemPeca = {
+  id: string
+  ordem_id: string
+  descricao: string
+  quantidade: number
+  valor_unitario: number
+  created_at: string
+}
+
+type CreateOrdemPecaParams = {
+  descricao: string
+  quantidade?: string
+  valorUnitario?: string
 }
 
 type CreateOrdemParams = {
@@ -22,6 +38,7 @@ type CreateOrdemParams = {
   veiculoId: string
   titulo: string
   descricao?: string
+  pecas?: CreateOrdemPecaParams[]
   status: string
   valor?: string
 }
@@ -44,7 +61,16 @@ type UpdateOrdemNotaParams = {
 }
 
 const ordemSelect =
-  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, nota_status, nota_numero, nota_emitida_em, valor, valor_pago, created_at'
+  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, nota_status, nota_numero, nota_emitida_em, valor, valor_servico, valor_pago, created_at'
+
+function parseMoney(value?: string) {
+  if (!value) {
+    return 0
+  }
+
+  const parsedValue = Number(value.replace(',', '.'))
+  return Number.isNaN(parsedValue) ? 0 : parsedValue
+}
 
 export async function listOrdens(oficinaId: string) {
   const { data, error } = await supabase
@@ -74,16 +100,43 @@ export async function getOrdem(ordemId: string) {
   return data
 }
 
+export async function listOrdemPecas(ordemId: string) {
+  const { data, error } = await supabase
+    .from('ordem_pecas')
+    .select('id, ordem_id, descricao, quantidade, valor_unitario, created_at')
+    .eq('ordem_id', ordemId)
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    throw error
+  }
+
+  return data
+}
+
 export async function createOrdem({
   clienteId,
   descricao,
   oficinaId,
+  pecas = [],
   status,
   titulo,
   valor,
   veiculoId,
 }: CreateOrdemParams) {
-  const parsedValor = valor ? Number(valor.replace(',', '.')) : 0
+  const valorServico = parseMoney(valor)
+  const parsedPecas = pecas
+    .filter((peca) => peca.descricao.trim())
+    .map((peca) => ({
+      descricao: peca.descricao.trim(),
+      quantidade: parseMoney(peca.quantidade) || 1,
+      valor_unitario: parseMoney(peca.valorUnitario),
+    }))
+  const valorPecas = parsedPecas.reduce(
+    (total, peca) => total + peca.quantidade * peca.valor_unitario,
+    0,
+  )
+  const valorTotal = valorServico + valorPecas
 
   const { data, error } = await supabase
     .from('ordens_servico')
@@ -95,7 +148,8 @@ export async function createOrdem({
       nota_status: 'pendente',
       status,
       titulo,
-      valor: Number.isNaN(parsedValor) ? 0 : parsedValor,
+      valor: valorTotal,
+      valor_servico: valorServico,
       valor_pago: 0,
       veiculo_id: veiculoId,
     })
@@ -104,6 +158,20 @@ export async function createOrdem({
 
   if (error) {
     throw error
+  }
+
+  if (parsedPecas.length > 0) {
+    const { error: pecasError } = await supabase.from('ordem_pecas').insert(
+      parsedPecas.map((peca) => ({
+        ...peca,
+        oficina_id: oficinaId,
+        ordem_id: data.id,
+      })),
+    )
+
+    if (pecasError) {
+      throw pecasError
+    }
   }
 
   return data
