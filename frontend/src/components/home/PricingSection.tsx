@@ -3,7 +3,7 @@ import SectionHeading from './SectionHeading'
 
 export default function PricingSection() {
   return (
-    <section id="planos" className="px-5 py-16 sm:px-6">
+    <section id="planos" className="scroll-mt-28 px-5 py-16 sm:px-6">
       <div className="mx-auto grid max-w-6xl gap-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-200 sm:p-8 lg:grid-cols-[1fr_380px] lg:items-center">
         <SectionHeading
           eyebrow="Implantação"

@@ -3,7 +3,7 @@ import SectionHeading from './SectionHeading'
 
 export default function ProductPreviewSection() {
   return (
-    <section id="dashboard" className="bg-slate-950 px-5 py-16 text-white sm:px-6">
+    <section id="dashboard" className="scroll-mt-28 bg-slate-950 px-5 py-16 text-white sm:px-6">
       <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:items-center">
         <div>
           <SectionHeading

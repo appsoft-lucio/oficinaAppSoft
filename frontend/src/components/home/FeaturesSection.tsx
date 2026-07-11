@@ -3,7 +3,7 @@ import SectionHeading from './SectionHeading'
 
 export default function FeaturesSection() {
   return (
-    <section id="recursos" className="px-5 py-16 sm:px-6">
+    <section id="recursos" className="scroll-mt-28 px-5 py-16 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <SectionHeading
           align="center"

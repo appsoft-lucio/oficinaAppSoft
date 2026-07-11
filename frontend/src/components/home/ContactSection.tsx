@@ -1,6 +1,6 @@
 export default function ContactSection() {
   return (
-    <section id="contato" className="px-5 pb-16 sm:px-6">
+    <section id="contato" className="scroll-mt-28 px-5 pb-16 sm:px-6">
       <div className="mx-auto max-w-6xl rounded-2xl bg-orange-600 p-6 text-white sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-10">
         <div>
           <p className="text-sm font-black uppercase tracking-[0.18em] text-orange-100">

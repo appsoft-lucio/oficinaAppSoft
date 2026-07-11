@@ -4,7 +4,7 @@ import { navLinks } from '../../data/home'
 
 export default function Header() {
   return (
-    <header className="border-b border-slate-800 bg-slate-950">
+    <header className="z-40 border-b border-slate-800 bg-slate-950 md:sticky md:top-0 md:border-white/10 md:bg-slate-950/85 md:shadow-lg md:shadow-slate-950/10 md:backdrop-blur-xl">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-5 px-5 py-4 sm:px-6">
         <Link aria-label="Ir para o início" to="/">
           <img

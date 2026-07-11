@@ -2,7 +2,10 @@ import DashboardPreview from './DashboardPreview'
 
 export default function HeroSection() {
   return (
-    <section className="mx-auto grid max-w-6xl gap-12 px-5 py-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20">
+    <section
+      className="mx-auto grid max-w-6xl scroll-mt-28 gap-12 px-5 py-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:py-20"
+      id="inicio"
+    >
       <div>
         <p className="mb-4 text-[13px] font-black uppercase tracking-[0.18em] text-orange-600">
           Sistema de gestão para oficinas mecânicas
