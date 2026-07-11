@@ -67,7 +67,16 @@ function parseMoney(value: string) {
 }
 
 function formatVoiceTranscript(value: string) {
-  const normalizedValue = value.trim().replace(/\s+/g, ' ')
+  const normalizedValue = value
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/\s+(virgula|vírgula)\b/giu, ',')
+    .replace(/\s+dois pontos\b/giu, ':')
+    .replace(/\s+(ponto de interrogacao|ponto de interrogação)\b/giu, '?')
+    .replace(/\s+(ponto de exclamacao|ponto de exclamação)\b/giu, '!')
+    .replace(/\s+(ponto final|ponto)\b/giu, '.')
+    .replace(/\s+nova linha\b/giu, '\n')
+    .replace(/[ \t]+([,.:!?])/g, '$1')
 
   if (!normalizedValue) {
     return ''
@@ -170,7 +179,7 @@ export default function OrdensPage() {
     return () => recognitionRef.current?.stop()
   }, [])
 
-  function handleVoiceDescription() {
+  function handleVoiceInput(target: 'descricao' | 'peca' | 'titulo') {
     if (isListening) {
       recognitionRef.current?.stop()
       return
@@ -195,9 +204,18 @@ export default function OrdensPage() {
       )
 
       if (transcript) {
-        setDescricao((currentDescription) =>
-          currentDescription.trim() ? `${currentDescription.trim()} ${transcript}` : transcript,
-        )
+        if (target === 'descricao') {
+          setDescricao((currentDescription) =>
+            currentDescription.trim() ? `${currentDescription.trim()} ${transcript}` : transcript,
+          )
+        } else if (target === 'titulo') {
+          setTitulo(transcript.replace(/[.!?]$/, ''))
+        } else {
+          setPecaDraft((currentPeca) => ({
+            ...currentPeca,
+            descricao: transcript.replace(/[.!?]$/, ''),
+          }))
+        }
       }
     }
     recognition.onerror = () => {
@@ -415,16 +433,28 @@ export default function OrdensPage() {
                   </select>
                 </label>
 
-                <label className="block">
-                  <span className="text-sm font-black text-slate-700">Titulo</span>
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <label className="text-sm font-black text-slate-700" htmlFor="ordem-titulo">
+                      Titulo
+                    </label>
+                    <button
+                      className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-black text-orange-700 transition hover:bg-orange-100"
+                      onClick={() => handleVoiceInput('titulo')}
+                      type="button"
+                    >
+                      Falar titulo
+                    </button>
+                  </div>
                   <input
                     className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                    id="ordem-titulo"
                     onChange={(event) => setTitulo(event.target.value)}
                     placeholder="Troca de oleo, revisao, diagnostico..."
                     required
                     value={titulo}
                   />
-                </label>
+                </div>
 
                 <div>
                   <div className="flex items-center justify-between gap-3">
@@ -438,7 +468,7 @@ export default function OrdensPage() {
                           ? 'bg-red-600 text-white hover:bg-red-700'
                           : 'border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100'
                       }`}
-                      onClick={handleVoiceDescription}
+                      onClick={() => handleVoiceInput('descricao')}
                       type="button"
                     >
                       {isListening ? 'Parar gravacao' : 'Falar descricao'}
@@ -497,19 +527,32 @@ export default function OrdensPage() {
                   </div>
 
                   <div className="mt-4 grid gap-3 rounded-lg bg-slate-50 p-3">
-                    <label className="block">
-                      <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">
-                        Descricao
-                      </span>
+                    <div>
+                      <div className="flex items-center justify-between gap-3">
+                        <label
+                          className="text-xs font-black uppercase tracking-[0.12em] text-slate-500"
+                          htmlFor="peca-descricao"
+                        >
+                          Descricao
+                        </label>
+                        <button
+                          className="rounded-lg px-2 py-1 text-xs font-black text-orange-700 transition hover:bg-orange-100"
+                          onClick={() => handleVoiceInput('peca')}
+                          type="button"
+                        >
+                          Falar peca
+                        </button>
+                      </div>
                       <input
                         className="mt-1 h-11 w-full rounded-lg border border-slate-300 px-3 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                        id="peca-descricao"
                         onChange={(event) =>
                           handlePecaDraftChange('descricao', event.target.value)
                         }
                         placeholder="Ex: Amortecedor dianteiro"
                         value={pecaDraft.descricao}
                       />
-                    </label>
+                    </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <label className="block">
                         <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">
