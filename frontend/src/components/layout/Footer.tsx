@@ -10,14 +10,16 @@ export default function Footer() {
       <div className="mx-auto max-w-6xl">
         <div className="grid gap-10 md:grid-cols-[1.4fr_0.8fr_1fr]">
           <div>
-            <img className="h-16 w-auto" src={logoAppSoft} alt="Oficina AppSoft" />
+            <Link aria-label="Ir para o início" className="inline-block" to="/">
+              <img className="h-16 w-auto" src={logoAppSoft} alt="Oficina AppSoft" />
+            </Link>
             <p className="mt-4 max-w-sm text-sm leading-6 text-slate-300">
               Plataforma online para gestão de oficinas mecânicas, com controle de clientes,
               veículos, ordens de serviço, peças, documentos e pagamentos.
             </p>
             <Link
               className="mt-5 inline-flex min-h-10 items-center justify-center rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700"
-              to="/login"
+              to="/dashboard"
             >
               Acessar o sistema
             </Link>
