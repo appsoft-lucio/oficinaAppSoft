@@ -66,6 +66,21 @@ function parseMoney(value: string) {
   return Number.isNaN(parsedValue) ? 0 : parsedValue
 }
 
+function formatVoiceTranscript(value: string) {
+  const normalizedValue = value.trim().replace(/\s+/g, ' ')
+
+  if (!normalizedValue) {
+    return ''
+  }
+
+  const capitalizedValue = normalizedValue.replace(
+    /(^|[.!?]\s+)(\p{Ll})/gu,
+    (_, prefix: string, letter: string) => `${prefix}${letter.toLocaleUpperCase('pt-BR')}`,
+  )
+
+  return /[.!?]$/.test(capitalizedValue) ? capitalizedValue : `${capitalizedValue}.`
+}
+
 export default function OrdensPage() {
   const [clienteId, setClienteId] = useState('')
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -173,10 +188,11 @@ export default function OrdensPage() {
     recognition.continuous = false
     recognition.interimResults = false
     recognition.onresult = (event) => {
-      const transcript = Array.from(event.results)
-        .map((result) => result[0].transcript)
-        .join(' ')
-        .trim()
+      const transcript = formatVoiceTranscript(
+        Array.from(event.results)
+          .map((result) => result[0].transcript)
+          .join(' '),
+      )
 
       if (transcript) {
         setDescricao((currentDescription) =>
