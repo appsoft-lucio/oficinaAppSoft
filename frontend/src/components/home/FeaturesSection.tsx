@@ -8,8 +8,8 @@ export default function FeaturesSection() {
         <SectionHeading
           align="center"
           eyebrow="Recursos"
-          title="O essencial para vender, executar e acompanhar serviços."
-          description="A primeira versão foca no fluxo que mais importa: cadastrar, abrir ordem, acompanhar execução e entender os números da oficina."
+          title="Recursos essenciais para administrar sua oficina com eficiência."
+          description="Do cadastro do cliente ao controle do pagamento, cada recurso foi pensado para simplificar processos e oferecer uma visão completa da operação."
         />
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2">

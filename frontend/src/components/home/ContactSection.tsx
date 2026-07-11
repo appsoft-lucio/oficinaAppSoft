@@ -4,14 +4,14 @@ export default function ContactSection() {
       <div className="mx-auto max-w-6xl rounded-2xl bg-orange-600 p-6 text-white sm:p-8 lg:flex lg:items-center lg:justify-between lg:gap-10">
         <div>
           <p className="text-sm font-black uppercase tracking-[0.18em] text-orange-100">
-            Próximo passo
+            Fale conosco
           </p>
           <h2 className="mt-3 max-w-2xl text-3xl font-black leading-tight sm:text-4xl">
-            Vamos montar uma demonstração com a cara da sua oficina?
+            Conheça uma forma mais eficiente de administrar sua oficina.
           </h2>
           <p className="mt-4 max-w-2xl text-[17px] leading-8 text-orange-50">
-            Use esta landing para apresentar a ideia, coletar feedback e transformar as
-            primeiras conversas em direção para o produto.
+            Solicite uma apresentação e veja como a plataforma pode contribuir para organizar
+            atendimentos, processos e resultados do seu negócio.
           </p>
         </div>
 

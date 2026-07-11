@@ -6,9 +6,9 @@ export default function PainPointsSection() {
     <section className="border-y border-slate-200 bg-white px-5 py-16 sm:px-6">
       <div className="mx-auto max-w-6xl">
         <SectionHeading
-          eyebrow="Por que usar"
-          title="Menos improviso no balcão, mais controle na operação."
-          description="A rotina de uma oficina muda rápido. O sistema precisa mostrar o que está acontecendo sem depender de caderno, memória ou mensagens espalhadas."
+          eyebrow="Gestão profissional"
+          title="Mais controle da operação, menos dependência de anotações dispersas."
+          description="A rotina da oficina exige agilidade e informações confiáveis. A plataforma reúne os dados essenciais para que cada atendimento seja acompanhado com clareza."
         />
 
         <div className="mt-10 grid gap-4 md:grid-cols-3">

@@ -1,7 +1,7 @@
 export const navLinks = [
   { label: 'Recursos', href: '#recursos' },
   { label: 'Dashboard', href: '#dashboard' },
-  { label: 'Planos', href: '#planos' },
+  { label: 'Implantação', href: '#planos' },
   { label: 'Contato', href: '#contato' },
 ]
 
@@ -11,15 +11,15 @@ export const creatorLinks = [
 ]
 
 export const trustIndicators = [
-  { label: 'Fluxo pensado para oficinas', value: 'OS + cliente + veículo' },
-  { label: 'Primeira versão', value: 'Landing + auth + dashboard' },
-  { label: 'Próximo passo', value: 'Supabase e dados reais' },
+  { label: 'Atendimento organizado', value: 'Clientes, veículos e ordens' },
+  { label: 'Operação integrada', value: 'Serviços, peças e documentos' },
+  { label: 'Gestão financeira', value: 'Recebimentos e pendências' },
 ]
 
 export const dashboardMetrics = [
-  { label: 'Ordens abertas', value: '24' },
-  { label: 'Clientes ativos', value: '128' },
-  { label: 'Receita mensal', value: 'R$ 42k' },
+  { label: 'Ordens abertas', value: 'Em dia' },
+  { label: 'Atendimentos', value: 'Organizados' },
+  { label: 'Financeiro', value: 'Sob controle' },
 ]
 
 export type ServiceStatusTone = 'orange' | 'slate'
@@ -56,24 +56,24 @@ export const painPoints = [
 export const features = [
   {
     title: 'Clientes e veículos',
-    description: 'Cadastro completo com histórico de serviços, placas, contatos e observações.',
+    description: 'Centralize dados de contato, veículos e histórico de atendimento de cada cliente.',
   },
   {
     title: 'Ordens de serviço',
-    description: 'Fluxo claro para abertura, acompanhamento, conclusão e cobrança.',
+    description: 'Abra e acompanhe serviços, registre peças e utilize o comando de voz no atendimento.',
   },
   {
     title: 'Financeiro da oficina',
-    description: 'Controle receitas, pendências, formas de pagamento e relatórios por período.',
+    description: 'Acompanhe valores recebidos, pagamentos parciais e pendências por período.',
   },
   {
-    title: 'Relatórios gerenciais',
-    description: 'Indicadores para entender movimento, serviços mais vendidos e faturamento.',
+    title: 'Documentos e controle fiscal',
+    description: 'Gere orçamentos e notas simples e organize o controle interno de emissão fiscal.',
   },
 ]
 
 export const pricingHighlights = [
-  'Implantação simples',
-  'Painel online',
-  'Suporte para evolução do sistema',
+  'Acesso online e responsivo',
+  'Dados centralizados com segurança',
+  'Suporte à implantação e evolução',
 ]

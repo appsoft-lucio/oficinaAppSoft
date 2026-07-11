@@ -9,21 +9,21 @@ export default function ProductPreviewSection() {
           <SectionHeading
             eyebrow="Dashboard"
             tone="dark"
-            title="Um painel para bater o olho e saber onde agir."
-            description="Acompanhe ordens abertas, clientes ativos, receita do mês e serviços em andamento. A ideia é reduzir dúvida e aumentar velocidade na tomada de decisão."
+            title="Informações relevantes para decisões mais seguras."
+            description="Acompanhe ordens, clientes, veículos e resultados financeiros em um painel objetivo, preparado para apoiar a rotina administrativa da oficina."
           />
           <ul className="mt-8 space-y-3 text-slate-300">
             <li className="flex gap-3">
               <span className="mt-1 h-2 w-2 rounded-full bg-orange-500" />
-              Visão diária da operação
+              Visão consolidada da operação
             </li>
             <li className="flex gap-3">
               <span className="mt-1 h-2 w-2 rounded-full bg-orange-500" />
-              Indicadores simples para o dono da oficina
+              Indicadores claros para a gestão
             </li>
             <li className="flex gap-3">
               <span className="mt-1 h-2 w-2 rounded-full bg-orange-500" />
-              Base pronta para evoluir com Supabase
+              Dados centralizados e disponíveis online
             </li>
           </ul>
         </div>
