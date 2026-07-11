@@ -191,9 +191,13 @@ export default function FiscalPage() {
           </section>
 
           <section className="grid gap-4 sm:grid-cols-3">
-            <SummaryCard detail="Aguardando controle" label="Pendentes" value={totalPendentes} />
-            <SummaryCard detail="Marcadas no sistema" label="Registradas" value={totalEmitidas} />
-            <SummaryCard detail="Marcadas como anuladas" label="Canceladas" value={totalCanceladas} />
+            <SummaryCard detail="Aguardando controle" label="Pendentes" value={String(totalPendentes)} />
+            <SummaryCard detail="Marcadas no sistema" label="Registradas" value={String(totalEmitidas)} />
+            <SummaryCard
+              detail="Marcadas como anuladas"
+              label="Canceladas"
+              value={String(totalCanceladas)}
+            />
           </section>
 
           <section className="mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
