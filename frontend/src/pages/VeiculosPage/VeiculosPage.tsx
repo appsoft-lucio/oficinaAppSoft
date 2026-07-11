@@ -20,7 +20,7 @@ export default function VeiculosPage() {
   const [placa, setPlaca] = useState('')
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstracao'
+  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
 
   const clientesById = useMemo(() => {
     return clientes.reduce<Record<string, Cliente>>((acc, cliente) => {
@@ -39,7 +39,7 @@ export default function VeiculosPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstracao',
+        fallbackName: 'Oficina Demonstração',
         userId: data.user.id,
       })
 
@@ -63,12 +63,12 @@ export default function VeiculosPage() {
     setMessage('')
 
     if (!oficina) {
-      setMessage('Entre com uma conta real para cadastrar veiculos. O acesso demo nao salva dados.')
+      setMessage('Entre com uma conta real para cadastrar veículos. O acesso demo não salva dados.')
       return
     }
 
     if (!clienteId) {
-      setMessage('Cadastre um cliente antes de cadastrar veiculo.')
+      setMessage('Cadastre um cliente antes de cadastrar veículo.')
       return
     }
 
@@ -89,9 +89,9 @@ export default function VeiculosPage() {
       setMarca('')
       setModelo('')
       setPlaca('')
-      setMessage('Veiculo cadastrado com sucesso.')
+      setMessage('Veículo cadastrado com sucesso.')
     } catch {
-      setMessage('Nao foi possivel cadastrar o veiculo.')
+      setMessage('Não foi possível cadastrar o veículo.')
     } finally {
       setIsSubmitting(false)
     }
@@ -121,24 +121,24 @@ export default function VeiculosPage() {
         <DashboardTopbar
           eyebrow="Cadastros"
           onOpenMenu={() => setIsMenuOpen(true)}
-          title="Veiculos"
+          title="Veículos"
         >
           <span className="inline-flex min-h-11 items-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-black text-slate-700">
-            {veiculos.length} veiculo(s)
+            {veiculos.length} veículo(s)
           </span>
         </DashboardTopbar>
 
         <div className="grid gap-6 px-5 py-6 sm:px-8 xl:grid-cols-[420px_1fr]">
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-xl font-black">Novo veiculo</h2>
+            <h2 className="text-xl font-black">Novo veículo</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Vincule o veiculo a um cliente para abrir ordens depois.
+              Vincule o veículo a um cliente para abrir ordens depois.
             </p>
 
             {requiresRealLogin ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
-                Entre com sua conta real para salvar veiculos no Supabase. O acesso demo e apenas
-                para apresentacao visual.
+                Entre com sua conta real para salvar veículos no Supabase. O acesso demo é apenas
+                para apresentação visual.
               </div>
             ) : clientes.length === 0 ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
@@ -220,7 +220,7 @@ export default function VeiculosPage() {
                   disabled={isSubmitting}
                   type="submit"
                 >
-                  {isSubmitting ? 'Salvando...' : 'Salvar veiculo'}
+                  {isSubmitting ? 'Salvando...' : 'Salvar veículo'}
                 </button>
               </form>
             )}
@@ -228,9 +228,9 @@ export default function VeiculosPage() {
 
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
             <div>
-              <h2 className="text-xl font-black">Veiculos cadastrados</h2>
+              <h2 className="text-xl font-black">Veículos cadastrados</h2>
               <p className="mt-1 text-sm text-slate-500">
-                Cada veiculo ja fica vinculado a um cliente.
+                Cada veículo já fica vinculado a um cliente.
               </p>
             </div>
 
@@ -247,7 +247,7 @@ export default function VeiculosPage() {
                           {veiculo.modelo}
                         </strong>
                         <span className="mt-1 block text-sm text-slate-500">
-                          {clientesById[veiculo.cliente_id ?? '']?.nome ?? 'Cliente nao informado'}
+                          {clientesById[veiculo.cliente_id ?? '']?.nome ?? 'Cliente não informado'}
                         </span>
                       </div>
                       <span className="rounded-lg bg-slate-100 px-3 py-1 text-xs font-black text-slate-700">
@@ -255,14 +255,14 @@ export default function VeiculosPage() {
                       </span>
                     </div>
                     <div className="mt-3 grid gap-1 text-sm text-slate-500">
-                      <span>{veiculo.marca || 'Marca nao informada'}</span>
-                      <span>{veiculo.ano || 'Ano nao informado'}</span>
+                      <span>{veiculo.marca || 'Marca não informada'}</span>
+                      <span>{veiculo.ano || 'Ano não informado'}</span>
                     </div>
                   </article>
                 ))
               ) : (
                 <p className="rounded-xl bg-slate-50 p-5 text-sm font-bold text-slate-500">
-                  Nenhum veiculo cadastrado ainda.
+                  Nenhum veículo cadastrado ainda.
                 </p>
               )}
             </div>

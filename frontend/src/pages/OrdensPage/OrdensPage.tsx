@@ -16,8 +16,8 @@ import { listVeiculos, type Veiculo } from '../../services/veiculos'
 const statusOptions = [
   { label: 'Aberta', value: 'aberta' },
   { label: 'Em andamento', value: 'em_andamento' },
-  { label: 'Aguardando peca', value: 'aguardando_peca' },
-  { label: 'Concluida', value: 'concluida' },
+  { label: 'Aguardando peça', value: 'aguardando_peca' },
+  { label: 'Concluída', value: 'concluida' },
   { label: 'Cancelada', value: 'cancelada' },
 ]
 
@@ -111,7 +111,7 @@ export default function OrdensPage() {
   const [veiculoId, setVeiculoId] = useState('')
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstracao'
+  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
 
   const clientesById = useMemo(() => {
     return clientes.reduce<Record<string, Cliente>>((acc, cliente) => {
@@ -149,7 +149,7 @@ export default function OrdensPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstracao',
+        fallbackName: 'Oficina Demonstração',
         userId: data.user.id,
       })
 
@@ -188,7 +188,7 @@ export default function OrdensPage() {
     const SpeechRecognition = getSpeechRecognition()
 
     if (!SpeechRecognition) {
-      setMessage('O reconhecimento de voz nao e suportado neste navegador. Use Chrome ou Edge.')
+      setMessage('O reconhecimento de voz não é suportado neste navegador. Use Chrome ou Edge.')
       return
     }
 
@@ -219,7 +219,7 @@ export default function OrdensPage() {
       }
     }
     recognition.onerror = () => {
-      setMessage('Nao foi possivel usar o microfone. Verifique a permissao do navegador.')
+      setMessage('Não foi possível usar o microfone. Verifique a permissão do navegador.')
       setIsListening(false)
     }
     recognition.onend = () => {
@@ -236,7 +236,7 @@ export default function OrdensPage() {
     } catch {
       setIsListening(false)
       recognitionRef.current = null
-      setMessage('Nao foi possivel iniciar o reconhecimento de voz.')
+      setMessage('Não foi possível iniciar o reconhecimento de voz.')
     }
   }
 
@@ -245,12 +245,12 @@ export default function OrdensPage() {
     setMessage('')
 
     if (!oficina) {
-      setMessage('Entre com uma conta real para cadastrar ordens. O acesso demo nao salva dados.')
+      setMessage('Entre com uma conta real para cadastrar ordens. O acesso demo não salva dados.')
       return
     }
 
     if (!clienteId || !veiculoId) {
-      setMessage('Cadastre cliente e veiculo antes de abrir uma ordem.')
+      setMessage('Cadastre cliente e veículo antes de abrir uma ordem.')
       return
     }
 
@@ -278,7 +278,7 @@ export default function OrdensPage() {
       setValor('')
       setMessage('Ordem cadastrada com sucesso.')
     } catch {
-      setMessage('Nao foi possivel cadastrar a ordem.')
+      setMessage('Não foi possível cadastrar a ordem.')
     } finally {
       setIsSubmitting(false)
     }
@@ -298,7 +298,7 @@ export default function OrdensPage() {
       )
       setStatusMessage('Status atualizado.')
     } catch {
-      setStatusMessage('Nao foi possivel atualizar o status.')
+      setStatusMessage('Não foi possível atualizar o status.')
     }
   }
 
@@ -311,7 +311,7 @@ export default function OrdensPage() {
 
   function handleAddPeca() {
     if (!pecaDraft.descricao.trim()) {
-      setMessage('Informe a descricao da peca antes de adicionar.')
+      setMessage('Informe a descrição da peça antes de adicionar.')
       return
     }
 
@@ -371,9 +371,9 @@ export default function OrdensPage() {
 
       <section className="min-w-0">
         <DashboardTopbar
-          eyebrow="Operacao"
+          eyebrow="Operação"
           onOpenMenu={() => setIsMenuOpen(true)}
-          title="Ordens de servico"
+          title="Ordens de serviço"
         >
           <span className="inline-flex min-h-11 items-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-black text-slate-700">
             {ordens.length} ordem(ns)
@@ -384,17 +384,17 @@ export default function OrdensPage() {
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
             <h2 className="text-xl font-black">Nova ordem</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Abra um servico vinculando cliente, veiculo, status e valor.
+              Abra um serviço vinculando cliente, veículo, status e valor.
             </p>
 
             {requiresRealLogin ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
-                Entre com sua conta real para salvar ordens no Supabase. O acesso demo e apenas
-                para apresentacao visual.
+                Entre com sua conta real para salvar ordens no Supabase. O acesso demo é apenas
+                para apresentação visual.
               </div>
             ) : clientes.length === 0 || veiculos.length === 0 ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
-                Cadastre pelo menos um cliente e um veiculo antes.{' '}
+                Cadastre pelo menos um cliente e um veículo antes.{' '}
                 <Link className="underline" to="/clientes">
                   Ir para clientes
                 </Link>
@@ -418,7 +418,7 @@ export default function OrdensPage() {
                 </label>
 
                 <label className="block">
-                  <span className="text-sm font-black text-slate-700">Veiculo</span>
+                  <span className="text-sm font-black text-slate-700">Veículo</span>
                   <select
                     className="mt-2 h-12 w-full rounded-lg border border-slate-300 bg-white px-4 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                     onChange={(event) => setVeiculoId(event.target.value)}
@@ -436,7 +436,7 @@ export default function OrdensPage() {
                 <div>
                   <div className="flex items-center justify-between gap-3">
                     <label className="text-sm font-black text-slate-700" htmlFor="ordem-titulo">
-                      Titulo
+                      Título
                     </label>
                     <button
                       className="rounded-lg border border-orange-200 bg-orange-50 px-3 py-2 text-xs font-black text-orange-700 transition hover:bg-orange-100"
@@ -450,7 +450,7 @@ export default function OrdensPage() {
                     className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                     id="ordem-titulo"
                     onChange={(event) => setTitulo(event.target.value)}
-                    placeholder="Troca de oleo, revisao, diagnostico..."
+                    placeholder="Troca de óleo, revisão, diagnóstico..."
                     required
                     value={titulo}
                   />
@@ -459,7 +459,7 @@ export default function OrdensPage() {
                 <div>
                   <div className="flex items-center justify-between gap-3">
                     <label className="text-sm font-black text-slate-700" htmlFor="ordem-descricao">
-                      Descricao
+                      Descrição
                     </label>
                     <button
                       aria-pressed={isListening}
@@ -471,19 +471,19 @@ export default function OrdensPage() {
                       onClick={() => handleVoiceInput('descricao')}
                       type="button"
                     >
-                      {isListening ? 'Parar gravacao' : 'Falar descricao'}
+                      {isListening ? 'Parar gravação' : 'Falar descrição'}
                     </button>
                   </div>
                   <textarea
                     className="mt-2 min-h-28 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                     id="ordem-descricao"
                     onChange={(event) => setDescricao(event.target.value)}
-                    placeholder="Detalhes do servico"
+                    placeholder="Detalhes do serviço"
                     value={descricao}
                   />
                   {isListening ? (
                     <span className="mt-2 block text-xs font-bold text-red-600">
-                      Ouvindo... fale a descricao da ordem.
+                      Ouvindo... fale a descrição da ordem.
                     </span>
                   ) : null}
                 </div>
@@ -505,7 +505,7 @@ export default function OrdensPage() {
                   </label>
 
                   <label className="block">
-                    <span className="text-sm font-black text-slate-700">Valor do servico</span>
+                    <span className="text-sm font-black text-slate-700">Valor do serviço</span>
                     <input
                       className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                       inputMode="decimal"
@@ -519,9 +519,9 @@ export default function OrdensPage() {
                 <section className="rounded-xl border border-slate-200 p-4">
                   <div>
                     <div>
-                      <h3 className="text-base font-black text-slate-950">Pecas compradas</h3>
+                      <h3 className="text-base font-black text-slate-950">Peças compradas</h3>
                       <p className="mt-1 text-sm text-slate-500">
-                        Liste as pecas que devem aparecer no orcamento e na nota simples.
+                        Liste as peças que devem aparecer no orçamento e na nota simples.
                       </p>
                     </div>
                   </div>
@@ -533,14 +533,14 @@ export default function OrdensPage() {
                           className="text-xs font-black uppercase tracking-[0.12em] text-slate-500"
                           htmlFor="peca-descricao"
                         >
-                          Descricao
+                          Descrição
                         </label>
                         <button
                           className="rounded-lg px-2 py-1 text-xs font-black text-orange-700 transition hover:bg-orange-100"
                           onClick={() => handleVoiceInput('peca')}
                           type="button"
                         >
-                          Falar peca
+                          Falar peça
                         </button>
                       </div>
                       <input
@@ -569,7 +569,7 @@ export default function OrdensPage() {
                       </label>
                       <label className="block">
                         <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">
-                          Valor unitario
+                          Valor unitário
                         </span>
                         <input
                           className="mt-1 h-11 w-full rounded-lg border border-slate-300 px-3 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
@@ -590,7 +590,7 @@ export default function OrdensPage() {
                       onClick={handleAddPeca}
                       type="button"
                     >
-                      {editingPecaIndex === null ? 'Adicionar peca' : 'Salvar alteracoes'}
+                      {editingPecaIndex === null ? 'Adicionar peça' : 'Salvar alterações'}
                     </button>
                     {editingPecaIndex !== null ? (
                       <button
@@ -672,7 +672,7 @@ export default function OrdensPage() {
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
             <h2 className="text-xl font-black">Ordens cadastradas</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Historico inicial de servicos da oficina.
+              Histórico inicial de serviços da oficina.
             </p>
 
             {statusMessage ? (
@@ -691,10 +691,10 @@ export default function OrdensPage() {
                           {ordem.titulo}
                         </strong>
                         <span className="mt-1 block text-sm text-slate-500">
-                          {clientesById[ordem.cliente_id ?? '']?.nome ?? 'Cliente nao informado'}
+                          {clientesById[ordem.cliente_id ?? '']?.nome ?? 'Cliente não informado'}
                         </span>
                         <span className="mt-1 block text-sm text-slate-500">
-                          {veiculosById[ordem.veiculo_id ?? '']?.modelo ?? 'Veiculo nao informado'}
+                          {veiculosById[ordem.veiculo_id ?? '']?.modelo ?? 'Veículo não informado'}
                         </span>
                       </div>
                       <div className="flex flex-col gap-2 sm:items-end">
@@ -721,7 +721,7 @@ export default function OrdensPage() {
                             className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-50"
                             to={`/documentos/${ordem.id}/orcamento`}
                           >
-                            Orcamento
+                            Orçamento
                           </Link>
                           <Link
                             className="rounded-lg bg-slate-950 px-3 py-2 text-xs font-black text-white transition hover:bg-slate-800"

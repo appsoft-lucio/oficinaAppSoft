@@ -15,7 +15,7 @@ export default function ClientesPage() {
   const [oficina, setOficina] = useState<Oficina | null>(null)
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [telefone, setTelefone] = useState('')
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstracao'
+  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
 
   useEffect(() => {
     async function loadClientes() {
@@ -27,7 +27,7 @@ export default function ClientesPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstracao',
+        fallbackName: 'Oficina Demonstração',
         userId: data.user.id,
       })
 
@@ -45,7 +45,7 @@ export default function ClientesPage() {
     setMessage('')
 
     if (!oficina) {
-      setMessage('Entre com uma conta real para cadastrar clientes. O acesso demo nao salva dados.')
+      setMessage('Entre com uma conta real para cadastrar clientes. O acesso demo não salva dados.')
       return
     }
 
@@ -65,7 +65,7 @@ export default function ClientesPage() {
       setTelefone('')
       setMessage('Cliente cadastrado com sucesso.')
     } catch {
-      setMessage('Nao foi possivel cadastrar o cliente.')
+      setMessage('Não foi possível cadastrar o cliente.')
     } finally {
       setIsSubmitting(false)
     }
@@ -106,13 +106,13 @@ export default function ClientesPage() {
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
             <h2 className="text-xl font-black">Novo cliente</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Cadastre os dados basicos para vincular veiculos e ordens depois.
+              Cadastre os dados básicos para vincular veículos e ordens depois.
             </p>
 
             {requiresRealLogin ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
-                Entre com sua conta real para salvar clientes no Supabase. O acesso demo e apenas
-                para apresentacao visual.
+                Entre com sua conta real para salvar clientes no Supabase. O acesso demo é apenas
+                para apresentação visual.
               </div>
             ) : null}
 
@@ -186,8 +186,8 @@ export default function ClientesPage() {
                       {cliente.nome}
                     </strong>
                     <div className="mt-2 grid gap-1 text-sm text-slate-500">
-                      <span>{cliente.telefone || 'Telefone nao informado'}</span>
-                      <span>{cliente.email || 'E-mail nao informado'}</span>
+                      <span>{cliente.telefone || 'Telefone não informado'}</span>
+                      <span>{cliente.email || 'E-mail não informado'}</span>
                     </div>
                   </article>
                 ))

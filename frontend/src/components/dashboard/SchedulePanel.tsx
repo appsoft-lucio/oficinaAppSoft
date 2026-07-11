@@ -6,9 +6,9 @@ type SchedulePanelProps = {
 
 const statusLabels: Record<string, string> = {
   aberta: 'Aberta',
-  aguardando_peca: 'Aguardando peca',
+  aguardando_peca: 'Aguardando peça',
   cancelada: 'Cancelada',
-  concluida: 'Concluida',
+  concluida: 'Concluída',
   em_andamento: 'Em andamento',
 }
 

@@ -6,7 +6,7 @@ const menuItems = [
   { label: 'Dashboard', to: '/dashboard' },
   { label: 'Ordens', to: '/ordens' },
   { label: 'Clientes', to: '/clientes' },
-  { label: 'Veiculos', to: '/veiculos' },
+  { label: 'Veículos', to: '/veiculos' },
   { label: 'Financeiro', to: '/financeiro' },
   { label: 'Fiscal', to: '/fiscal' },
 ]

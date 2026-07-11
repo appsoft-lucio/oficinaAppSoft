@@ -22,7 +22,7 @@ const notaStatusLabels: Record<string, string> = {
 
 function formatDate(value: string | null) {
   if (!value) {
-    return 'Sem emissao'
+    return 'Sem emissão'
   }
 
   return new Intl.DateTimeFormat('pt-BR', {
@@ -41,7 +41,7 @@ export default function FiscalPage() {
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [statusFilter, setStatusFilter] = useState('todos')
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstracao'
+  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
 
   const clientesById = useMemo(() => {
     return clientes.reduce<Record<string, Cliente>>((acc, cliente) => {
@@ -80,7 +80,7 @@ export default function FiscalPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstracao',
+        fallbackName: 'Oficina Demonstração',
         userId: data.user.id,
       })
 
@@ -127,7 +127,7 @@ export default function FiscalPage() {
       }))
       setMessage('Status fiscal atualizado.')
     } catch {
-      setMessage('Nao foi possivel atualizar a nota.')
+      setMessage('Não foi possível atualizar a nota.')
     }
   }
 
@@ -174,18 +174,18 @@ export default function FiscalPage() {
         <div className="px-5 py-6 sm:px-8">
           {requiresRealLogin ? (
             <div className="rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
-              Entre com sua conta real para visualizar o modulo fiscal.
+              Entre com sua conta real para visualizar o módulo fiscal.
             </div>
           ) : null}
 
           <section className="mb-6 rounded-2xl bg-slate-950 p-5 text-white shadow-sm">
             <p className="text-xs font-black uppercase tracking-[0.18em] text-orange-400">
-              Emissao oficial ainda nao conectada
+              Emissão oficial ainda não conectada
             </p>
-            <h2 className="mt-2 text-2xl font-black">Controle interno antes da integracao fiscal</h2>
+            <h2 className="mt-2 text-2xl font-black">Controle interno antes da integração fiscal</h2>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
-              Esta tela registra o status fiscal da ordem dentro do sistema. A emissao oficial de
-              NF-e ou NFS-e depende de uma integracao segura com um emissor fiscal, usando backend,
+              Esta tela registra o status fiscal da ordem dentro do sistema. A emissão oficial de
+              NF-e ou NFS-e depende de uma integração segura com um emissor fiscal, usando backend,
               certificado, CNPJ e regras da prefeitura ou SEFAZ.
             </p>
           </section>
@@ -205,7 +205,7 @@ export default function FiscalPage() {
               <div>
                 <h2 className="text-xl font-black">Ordens para controle fiscal</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Use para organizar o numero e o status da nota quando ela for emitida fora do app.
+                  Use para organizar o número e o status da nota quando ela for emitida fora do app.
                 </p>
               </div>
               <strong className="text-sm font-black text-slate-700">
@@ -231,10 +231,10 @@ export default function FiscalPage() {
                         {ordem.titulo}
                       </strong>
                       <span className="mt-1 block text-sm text-slate-500">
-                        {clientesById[ordem.cliente_id ?? '']?.nome ?? 'Cliente nao informado'}
+                        {clientesById[ordem.cliente_id ?? '']?.nome ?? 'Cliente não informado'}
                       </span>
                       <span className="mt-1 block text-sm text-slate-500">
-                        {veiculosById[ordem.veiculo_id ?? '']?.modelo ?? 'Veiculo nao informado'}
+                        {veiculosById[ordem.veiculo_id ?? '']?.modelo ?? 'Veículo não informado'}
                       </span>
                       <span className="mt-2 inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-slate-600">
                         {notaStatusLabels[ordem.nota_status] ?? ordem.nota_status}
@@ -243,7 +243,7 @@ export default function FiscalPage() {
 
                     <label className="block">
                       <span className="text-xs font-black uppercase tracking-[0.12em] text-slate-500">
-                        Numero da nota
+                        Número da nota
                       </span>
                       <input
                         className="mt-2 h-11 w-full rounded-lg border border-slate-300 px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"

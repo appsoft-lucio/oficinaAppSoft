@@ -21,7 +21,7 @@ export default function ForgotPasswordPage() {
     setIsSubmitting(false)
 
     if (error) {
-      setMessage('Nao foi possivel enviar o link. Confira o e-mail e tente novamente.')
+      setMessage('Não foi possível enviar o link. Confira o e-mail e tente novamente.')
       return
     }
 
@@ -30,14 +30,14 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout
-      description="Informe seu e-mail para receber as instrucoes de recuperacao quando a autenticacao estiver conectada."
+      description="Informe seu e-mail para receber as instruções de recuperação quando a autenticação estiver conectada."
       eyebrow="Recuperacao de acesso"
-      title="Recupere o acesso ao painel sem interromper a operacao."
+      title="Recupere o acesso ao painel sem interromper a operação."
     >
       <div>
         <h2 className="text-2xl font-black text-slate-950">Esqueci minha senha</h2>
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          Enviaremos um link de recuperacao para o e-mail cadastrado.
+          Enviaremos um link de recuperação para o e-mail cadastrado.
         </p>
       </div>
 
@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
           disabled={isSubmitting}
           type="submit"
         >
-          {isSubmitting ? 'Enviando...' : 'Enviar link de recuperacao'}
+          {isSubmitting ? 'Enviando...' : 'Enviar link de recuperação'}
         </button>
 
         <p className="text-center text-sm text-slate-500">

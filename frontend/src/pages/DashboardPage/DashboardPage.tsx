@@ -24,7 +24,7 @@ export default function DashboardPage() {
   const [ordens, setOrdens] = useState<OrdemServico[]>([])
   const [summary, setSummary] = useState<DashboardSummaryItem[]>([])
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstracao'
+  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
 
   useEffect(() => {
     async function prepareOficina() {
@@ -35,7 +35,7 @@ export default function DashboardPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstracao',
+        fallbackName: 'Oficina Demonstração',
         userId: data.user.id,
       })
 
@@ -107,7 +107,7 @@ export default function DashboardPage() {
               Visão geral
             </p>
             <h2 className="mt-2 text-2xl font-black">
-              Ola. A {oficinaName} esta em movimento.
+              Olá. A {oficinaName} está em movimento.
             </h2>
             <p className="mt-2 max-w-3xl text-slate-300">
               Esta é a primeira tela logada do app. Os dados ainda são demonstrativos, mas

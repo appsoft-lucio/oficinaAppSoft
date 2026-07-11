@@ -11,7 +11,7 @@ export type Oficina = {
 }
 
 export async function ensureUserOficina({
-  fallbackName = 'Oficina Demonstracao',
+  fallbackName = 'Oficina Demonstração',
   userId,
 }: EnsureUserOficinaParams) {
   const { data: oficina, error: selectError } = await supabase

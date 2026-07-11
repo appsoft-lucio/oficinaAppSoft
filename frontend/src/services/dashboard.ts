@@ -35,8 +35,8 @@ export async function getDashboardData(oficinaId: string) {
         value: String(clientes.length),
       },
       {
-        detail: 'Veiculos cadastrados',
-        label: 'Veiculos',
+        detail: 'Veículos cadastrados',
+        label: 'Veículos',
         value: String(veiculos.length),
       },
     ],

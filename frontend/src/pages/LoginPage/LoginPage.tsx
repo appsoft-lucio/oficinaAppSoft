@@ -24,19 +24,19 @@ export default function LoginPage() {
 
     if (error) {
       setIsSubmitting(false)
-      setMessage('Nao foi possivel entrar. Confira o e-mail e a senha.')
+      setMessage('Não foi possível entrar. Confira o e-mail e a senha.')
       return
     }
 
     if (data.user) {
       try {
         await ensureUserOficina({
-          fallbackName: 'Oficina Demonstracao',
+          fallbackName: 'Oficina Demonstração',
           userId: data.user.id,
         })
       } catch {
         setIsSubmitting(false)
-        setMessage('Login feito, mas nao foi possivel preparar a oficina.')
+        setMessage('Login feito, mas não foi possível preparar a oficina.')
         return
       }
     }
@@ -47,7 +47,7 @@ export default function LoginPage() {
 
   return (
     <AuthLayout
-      description="Entre no painel para acompanhar ordens de servico, clientes, veiculos e indicadores da oficina."
+      description="Entre no painel para acompanhar ordens de serviço, clientes, veículos e indicadores da oficina."
       eyebrow="Acesso ao sistema"
       title="Bem-vindo de volta ao painel da sua oficina."
     >

@@ -152,7 +152,7 @@ export default function FinanceiroPage() {
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [veiculoFilter, setVeiculoFilter] = useState('todos')
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstracao'
+  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
 
   const clientesById = useMemo(() => {
     return clientes.reduce<Record<string, Cliente>>((acc, cliente) => {
@@ -278,7 +278,7 @@ export default function FinanceiroPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstracao',
+        fallbackName: 'Oficina Demonstração',
         userId: data.user.id,
       })
 
@@ -330,7 +330,7 @@ export default function FinanceiroPage() {
       }))
       setMessage('Status de pagamento atualizado.')
     } catch {
-      setMessage('Nao foi possivel atualizar o pagamento.')
+      setMessage('Não foi possível atualizar o pagamento.')
     }
   }
 
@@ -361,7 +361,7 @@ export default function FinanceiroPage() {
       }))
       setMessage('Valor parcial atualizado.')
     } catch {
-      setMessage('Nao foi possivel salvar o valor parcial.')
+      setMessage('Não foi possível salvar o valor parcial.')
     }
   }
 
@@ -408,7 +408,7 @@ export default function FinanceiroPage() {
               <div>
                 <h2 className="text-xl font-black">Filtros financeiros</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Consulte receita por periodo, cliente, carro e pagamento.
+                  Consulte receita por período, cliente, carro e pagamento.
                 </p>
               </div>
               <button
@@ -427,17 +427,17 @@ export default function FinanceiroPage() {
 
             <div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
               <label className="block">
-                <span className="text-sm font-black text-slate-700">Periodo</span>
+                <span className="text-sm font-black text-slate-700">Período</span>
                 <select
                   className="mt-2 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                   onChange={(event) => setPeriodFilter(event.target.value)}
                   value={periodFilter}
                 >
                   <option value="mes_atual">Este mes</option>
-                  <option value="mes_anterior">Mes anterior</option>
+                  <option value="mes_anterior">Mês anterior</option>
                   <option value="ultimos_3_meses">Ultimos 3 meses</option>
                   <option value="ano_atual">Este ano</option>
-                  <option value="todos">Todo o periodo</option>
+                  <option value="todos">Todo o período</option>
                   <option value="personalizado">Personalizado</option>
                 </select>
               </label>
@@ -518,22 +518,22 @@ export default function FinanceiroPage() {
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <SummaryCard
               detail={`${filteredOrdens.length} ordem(ns) filtradas`}
-              label="Recebido no periodo"
+              label="Recebido no período"
               value={formatCurrency(totalRecebido)}
             />
             <SummaryCard
-              detail={`${currentMonthSummary.month === currentMonthKey ? 'Mes atual' : 'Periodo filtrado'}`}
-              label="Em aberto no periodo"
+              detail={`${currentMonthSummary.month === currentMonthKey ? 'Mês atual' : 'Período filtrado'}`}
+              label="Em aberto no período"
               value={formatCurrency(totalEmAberto)}
             />
             <SummaryCard
               detail={`${ordensPagas} ordem(ns) pagas`}
-              label="Recebido ate hoje"
+              label="Recebido até hoje"
               value={formatCurrency(totalRecebidoAteHoje)}
             />
             <SummaryCard
               detail={`${ordens.length} ordem(ns) no total`}
-              label="Em aberto ate hoje"
+              label="Em aberto até hoje"
               value={formatCurrency(totalEmAbertoAteHoje)}
             />
           </section>
@@ -555,7 +555,7 @@ export default function FinanceiroPage() {
               <table className="w-full min-w-[680px] border-separate border-spacing-y-2 text-left">
                 <thead>
                   <tr className="text-sm text-slate-500">
-                    <th className="px-4 py-2 font-black">Mes</th>
+                    <th className="px-4 py-2 font-black">Mês</th>
                     <th className="px-4 py-2 font-black">Ordens</th>
                     <th className="px-4 py-2 font-black">Recebido</th>
                     <th className="px-4 py-2 font-black">Em aberto</th>
@@ -603,7 +603,7 @@ export default function FinanceiroPage() {
               <div>
                 <h2 className="text-xl font-black">Receita por ordem</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Acompanhe o valor e o status de pagamento de cada servico.
+                  Acompanhe o valor e o status de pagamento de cada serviço.
                 </p>
               </div>
             </div>
@@ -626,10 +626,10 @@ export default function FinanceiroPage() {
                         {ordem.titulo}
                       </strong>
                       <span className="mt-1 block text-sm text-slate-500">
-                        {clientesById[ordem.cliente_id ?? '']?.nome ?? 'Cliente nao informado'}
+                        {clientesById[ordem.cliente_id ?? '']?.nome ?? 'Cliente não informado'}
                       </span>
                       <span className="mt-1 block text-sm text-slate-500">
-                        {veiculosById[ordem.veiculo_id ?? '']?.modelo ?? 'Veiculo nao informado'}
+                        {veiculosById[ordem.veiculo_id ?? '']?.modelo ?? 'Veículo não informado'}
                       </span>
                       <span className="mt-1 block text-xs font-bold uppercase tracking-[0.12em] text-orange-600">
                         {pagamentoStatusLabels[ordem.pagamento_status] ?? ordem.pagamento_status}

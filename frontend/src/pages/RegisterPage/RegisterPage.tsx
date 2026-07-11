@@ -30,7 +30,7 @@ export default function RegisterPage() {
     setIsSubmitting(false)
 
     if (error) {
-      setMessage('Nao foi possivel criar a conta. Confira os dados e tente novamente.')
+      setMessage('Não foi possível criar a conta. Confira os dados e tente novamente.')
       return
     }
 
@@ -96,7 +96,7 @@ export default function RegisterPage() {
         </button>
 
         <p className="text-center text-sm text-slate-500">
-          Ja tem uma conta?{' '}
+          Já tem uma conta?{' '}
           <Link className="font-black text-orange-600 hover:text-orange-700" to="/login">
             Entrar
           </Link>

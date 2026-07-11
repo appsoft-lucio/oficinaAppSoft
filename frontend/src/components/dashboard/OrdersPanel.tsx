@@ -25,7 +25,7 @@ export default function OrdersPanel({ clientes, ordens, veiculos }: OrdersPanelP
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-950">Ordens recentes</h2>
-          <p className="mt-1 text-sm text-slate-500">Servicos cadastrados no Supabase.</p>
+          <p className="mt-1 text-sm text-slate-500">Serviços cadastrados no Supabase.</p>
         </div>
         <Link
           className="hidden rounded-lg bg-slate-950 px-4 py-2 text-sm font-black text-white sm:block"
@@ -44,10 +44,10 @@ export default function OrdersPanel({ clientes, ordens, veiculos }: OrdersPanelP
             >
               <div>
                 <strong className="block font-black text-slate-950">
-                  {clientesById[ordem.cliente_id ?? '']?.nome ?? 'Cliente nao informado'}
+                  {clientesById[ordem.cliente_id ?? '']?.nome ?? 'Cliente não informado'}
                 </strong>
                 <span className="text-sm text-slate-500">
-                  {veiculosById[ordem.veiculo_id ?? '']?.modelo ?? 'Veiculo nao informado'}
+                  {veiculosById[ordem.veiculo_id ?? '']?.modelo ?? 'Veículo não informado'}
                 </span>
               </div>
               <div>
