@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
 import DashboardTopbar from '../../components/dashboard/DashboardTopbar'
@@ -33,6 +33,34 @@ const emptyPeca: PecaForm = {
   valorUnitario: '',
 }
 
+type SpeechRecognitionEventLike = {
+  results: ArrayLike<{
+    0: { transcript: string }
+  }>
+}
+
+type SpeechRecognitionLike = {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  onend: (() => void) | null
+  onerror: (() => void) | null
+  onresult: ((event: SpeechRecognitionEventLike) => void) | null
+  start: () => void
+  stop: () => void
+}
+
+type SpeechRecognitionConstructor = new () => SpeechRecognitionLike
+
+function getSpeechRecognition() {
+  const speechWindow = window as typeof window & {
+    SpeechRecognition?: SpeechRecognitionConstructor
+    webkitSpeechRecognition?: SpeechRecognitionConstructor
+  }
+
+  return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition
+}
+
 function parseMoney(value: string) {
   const parsedValue = Number(value.replace(',', '.'))
   return Number.isNaN(parsedValue) ? 0 : parsedValue
@@ -44,6 +72,7 @@ export default function OrdensPage() {
   const [descricao, setDescricao] = useState('')
   const [editingPecaIndex, setEditingPecaIndex] = useState<number | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isListening, setIsListening] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
   const [oficina, setOficina] = useState<Oficina | null>(null)
@@ -57,6 +86,7 @@ export default function OrdensPage() {
   const [valor, setValor] = useState('')
   const [veiculoId, setVeiculoId] = useState('')
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const oficinaName = oficina?.nome ?? 'Oficina Demonstracao'
 
   const clientesById = useMemo(() => {
@@ -120,6 +150,61 @@ export default function OrdensPage() {
     const firstVeiculo = veiculos.find((veiculo) => veiculo.cliente_id === clienteId)
     setVeiculoId(firstVeiculo?.id ?? '')
   }, [clienteId, veiculos])
+
+  useEffect(() => {
+    return () => recognitionRef.current?.stop()
+  }, [])
+
+  function handleVoiceDescription() {
+    if (isListening) {
+      recognitionRef.current?.stop()
+      return
+    }
+
+    const SpeechRecognition = getSpeechRecognition()
+
+    if (!SpeechRecognition) {
+      setMessage('O reconhecimento de voz nao e suportado neste navegador. Use Chrome ou Edge.')
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'pt-BR'
+    recognition.continuous = false
+    recognition.interimResults = false
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results)
+        .map((result) => result[0].transcript)
+        .join(' ')
+        .trim()
+
+      if (transcript) {
+        setDescricao((currentDescription) =>
+          currentDescription.trim() ? `${currentDescription.trim()} ${transcript}` : transcript,
+        )
+      }
+    }
+    recognition.onerror = () => {
+      setMessage('Nao foi possivel usar o microfone. Verifique a permissao do navegador.')
+      setIsListening(false)
+    }
+    recognition.onend = () => {
+      setIsListening(false)
+      recognitionRef.current = null
+    }
+
+    recognitionRef.current = recognition
+    setMessage('')
+    setIsListening(true)
+
+    try {
+      recognition.start()
+    } catch {
+      setIsListening(false)
+      recognitionRef.current = null
+      setMessage('Nao foi possivel iniciar o reconhecimento de voz.')
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -325,15 +410,37 @@ export default function OrdensPage() {
                   />
                 </label>
 
-                <label className="block">
-                  <span className="text-sm font-black text-slate-700">Descricao</span>
+                <div>
+                  <div className="flex items-center justify-between gap-3">
+                    <label className="text-sm font-black text-slate-700" htmlFor="ordem-descricao">
+                      Descricao
+                    </label>
+                    <button
+                      aria-pressed={isListening}
+                      className={`rounded-lg px-3 py-2 text-xs font-black transition ${
+                        isListening
+                          ? 'bg-red-600 text-white hover:bg-red-700'
+                          : 'border border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100'
+                      }`}
+                      onClick={handleVoiceDescription}
+                      type="button"
+                    >
+                      {isListening ? 'Parar gravacao' : 'Falar descricao'}
+                    </button>
+                  </div>
                   <textarea
                     className="mt-2 min-h-28 w-full rounded-lg border border-slate-300 px-4 py-3 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                    id="ordem-descricao"
                     onChange={(event) => setDescricao(event.target.value)}
                     placeholder="Detalhes do servico"
                     value={descricao}
                   />
-                </label>
+                  {isListening ? (
+                    <span className="mt-2 block text-xs font-bold text-red-600">
+                      Ouvindo... fale a descricao da ordem.
+                    </span>
+                  ) : null}
+                </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="block">
