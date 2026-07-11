@@ -42,6 +42,7 @@ export default function OrdensPage() {
   const [clienteId, setClienteId] = useState('')
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [descricao, setDescricao] = useState('')
+  const [editingPecaIndex, setEditingPecaIndex] = useState<number | null>(null)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [message, setMessage] = useState('')
@@ -150,6 +151,7 @@ export default function OrdensPage() {
 
       setOrdens((currentOrdens) => [createdOrdem, ...currentOrdens])
       setDescricao('')
+      setEditingPecaIndex(null)
       setPecaDraft({ ...emptyPeca })
       setPecas([])
       setStatus('aberta')
@@ -195,12 +197,37 @@ export default function OrdensPage() {
     }
 
     setMessage('')
-    setPecas((currentPecas) => [...currentPecas, { ...pecaDraft }])
+    setPecas((currentPecas) => {
+      if (editingPecaIndex === null) {
+        return [...currentPecas, { ...pecaDraft }]
+      }
+
+      return currentPecas.map((peca, index) =>
+        index === editingPecaIndex ? { ...pecaDraft } : peca,
+      )
+    })
     setPecaDraft({ ...emptyPeca })
+    setEditingPecaIndex(null)
+  }
+
+  function handleEditPeca(index: number) {
+    setMessage('')
+    setPecaDraft({ ...pecas[index] })
+    setEditingPecaIndex(index)
+  }
+
+  function handleCancelEditPeca() {
+    setPecaDraft({ ...emptyPeca })
+    setEditingPecaIndex(null)
   }
 
   function handleRemovePeca(index: number) {
     setPecas((currentPecas) => currentPecas.filter((_, currentIndex) => currentIndex !== index))
+    if (editingPecaIndex === index) {
+      handleCancelEditPeca()
+    } else if (editingPecaIndex !== null && editingPecaIndex > index) {
+      setEditingPecaIndex(editingPecaIndex - 1)
+    }
   }
 
   return (
@@ -391,13 +418,24 @@ export default function OrdensPage() {
                     </div>
                   </div>
 
-                  <button
-                    className="mt-4 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-4 text-sm font-black text-slate-700 transition hover:bg-slate-50"
-                    onClick={handleAddPeca}
-                    type="button"
-                  >
-                    Adicionar peca
-                  </button>
+                  <div className="mt-4 flex gap-2">
+                    <button
+                      className="min-h-11 flex-1 rounded-lg border border-slate-300 bg-white px-4 text-sm font-black text-slate-700 transition hover:bg-slate-50"
+                      onClick={handleAddPeca}
+                      type="button"
+                    >
+                      {editingPecaIndex === null ? 'Adicionar peca' : 'Salvar alteracoes'}
+                    </button>
+                    {editingPecaIndex !== null ? (
+                      <button
+                        className="min-h-11 rounded-lg px-4 text-sm font-black text-slate-500 transition hover:bg-slate-100"
+                        onClick={handleCancelEditPeca}
+                        type="button"
+                      >
+                        Cancelar
+                      </button>
+                    ) : null}
+                  </div>
 
                   {pecas.length > 0 ? (
                     <div className="mt-4 grid gap-2">
@@ -422,6 +460,13 @@ export default function OrdensPage() {
                               <strong className="text-sm font-black text-slate-950">
                                 R$ {subtotal.toFixed(2)}
                               </strong>
+                              <button
+                                className="h-9 rounded-lg border border-orange-200 px-3 text-xs font-black text-orange-700 transition hover:bg-orange-50"
+                                onClick={() => handleEditPeca(index)}
+                                type="button"
+                              >
+                                Editar
+                              </button>
                               <button
                                 className="h-9 rounded-lg border border-slate-300 px-3 text-xs font-black text-slate-700 transition hover:bg-slate-50"
                                 onClick={() => handleRemovePeca(index)}
