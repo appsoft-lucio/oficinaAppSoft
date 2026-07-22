@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import AuthField from '../../components/auth/AuthField'
 import AuthLayout from '../../components/auth/AuthLayout'
 import { supabase } from '../../lib/supabase'
 
 export default function RegisterPage() {
+  const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -16,7 +17,7 @@ export default function RegisterPage() {
     setMessage('')
     setIsSubmitting(true)
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -31,6 +32,11 @@ export default function RegisterPage() {
 
     if (error) {
       setMessage('Não foi possível criar a conta. Confira os dados e tente novamente.')
+      return
+    }
+
+    if (data.session) {
+      navigate('/dashboard')
       return
     }
 
