@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import logoAppSoft from '../../assets/logo-appsoft-orange-semFundo.png'
 import { navLinks } from '../../data/home'
+import InstallAppButton from '../pwa/InstallAppButton'
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -46,12 +47,15 @@ export default function Header() {
           ))}
         </nav>
 
-        <Link
+        <div className="flex items-center gap-2">
+          <InstallAppButton />
+          <Link
           className="inline-flex min-h-10 items-center justify-center rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700"
           to="/login"
         >
           Acessar Sistema
-        </Link>
+          </Link>
+        </div>
       </div>
     </header>
   )

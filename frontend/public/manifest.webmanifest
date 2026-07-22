@@ -1,0 +1,19 @@
+{
+  "name": "Oficina AppSoft",
+  "short_name": "AppSoft",
+  "description": "Gestão de oficinas mecânicas, clientes, veículos e ordens de serviço.",
+  "start_url": "/login",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

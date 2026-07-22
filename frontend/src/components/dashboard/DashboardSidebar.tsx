@@ -1,6 +1,7 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import logoAppSoft from '../../assets/logo-appsoft-orange-semFundo.png'
 import { supabase } from '../../lib/supabase'
+import InstallAppButton from '../pwa/InstallAppButton'
 
 const menuItems = [
   { label: 'Dashboard', to: '/dashboard' },
@@ -55,13 +56,16 @@ export default function DashboardSidebar({ oficinaName }: DashboardSidebarProps)
         ))}
       </nav>
 
+      <div className="mt-auto grid gap-3">
+        <InstallAppButton />
       <button
-        className="mt-auto rounded-lg border border-slate-800 px-4 py-3 text-sm font-black text-slate-300 transition hover:border-orange-500 hover:text-orange-400"
+        className="rounded-lg border border-slate-800 px-4 py-3 text-sm font-black text-slate-300 transition hover:border-orange-500 hover:text-orange-400"
         onClick={handleLogout}
         type="button"
       >
         Sair
       </button>
+      </div>
     </aside>
   )
 }
