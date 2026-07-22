@@ -6,6 +6,7 @@ export type SystemClient = {
   ownerEmail: string
   ownerName: string
   status: string
+  trialEndsAt: string | null
   createdAt: string
 }
 

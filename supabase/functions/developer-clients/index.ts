@@ -51,7 +51,7 @@ Deno.serve(async (request) => {
     if (request.method === 'GET') {
       const { data: workshops, error } = await adminClient
         .from('oficinas')
-        .select('id, nome, dono_id, status, created_at')
+        .select('id, nome, dono_id, status, trial_ends_at, created_at')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -64,6 +64,7 @@ Deno.serve(async (request) => {
           ownerEmail: data.user?.email ?? 'E-mail indisponível',
           ownerName: String(data.user?.user_metadata?.full_name ?? 'Responsável'),
           status: workshop.status,
+          trialEndsAt: workshop.trial_ends_at,
           createdAt: workshop.created_at,
         }
       }))
@@ -82,7 +83,7 @@ Deno.serve(async (request) => {
 
       const { data: workshop, error: workshopLookupError } = await adminClient
         .from('oficinas')
-        .select('id, nome, dono_id, status, created_at')
+        .select('id, nome, dono_id, status, trial_ends_at, created_at')
         .eq('id', clientId)
         .single()
 
@@ -99,9 +100,9 @@ Deno.serve(async (request) => {
 
       const { data: updatedWorkshop, error: updateError } = await adminClient
         .from('oficinas')
-        .update({ status })
+        .update({ status, ...(status === 'ativo' ? { trial_ends_at: null } : {}) })
         .eq('id', clientId)
-        .select('id, nome, status, created_at')
+        .select('id, nome, status, trial_ends_at, created_at')
         .single()
 
       if (updateError) {
@@ -118,6 +119,7 @@ Deno.serve(async (request) => {
           ownerEmail: ownerData.user.email ?? 'E-mail indisponível',
           ownerName: String(ownerData.user.user_metadata?.full_name ?? 'Responsável'),
           status: updatedWorkshop.status,
+          trialEndsAt: updatedWorkshop.trial_ends_at,
           createdAt: updatedWorkshop.created_at,
         },
       })
@@ -150,8 +152,8 @@ Deno.serve(async (request) => {
 
     const { data: workshop, error: workshopError } = await adminClient
       .from('oficinas')
-      .insert({ dono_id: createdUser.user.id, nome: workshopName })
-      .select('id, nome, status, created_at')
+      .insert({ dono_id: createdUser.user.id, nome: workshopName, trial_ends_at: null })
+      .select('id, nome, status, trial_ends_at, created_at')
       .single()
 
     if (workshopError) {
@@ -166,6 +168,7 @@ Deno.serve(async (request) => {
         ownerEmail: email,
         ownerName,
         status: workshop.status,
+        trialEndsAt: workshop.trial_ends_at,
         createdAt: workshop.created_at,
       },
     }, 201)

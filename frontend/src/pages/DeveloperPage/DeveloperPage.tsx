@@ -150,6 +150,11 @@ export default function DeveloperPage() {
                 <div>
                   <strong className="block font-black">{client.nome}</strong>
                   <span className="mt-1 block text-sm text-slate-500">{client.ownerName} · {client.ownerEmail}</span>
+                  {client.trialEndsAt ? (
+                    <span className="mt-1 block text-xs font-bold text-orange-600">
+                      Avaliação até {formatDate(client.trialEndsAt)}
+                    </span>
+                  ) : null}
                 </div>
                 <div className="flex items-center gap-3 sm:justify-end">
                   <div className="text-left sm:text-right">

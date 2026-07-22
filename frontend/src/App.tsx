@@ -13,6 +13,7 @@ import LoginPage from './pages/LoginPage/LoginPage'
 import OrdensPage from './pages/OrdensPage/OrdensPage'
 import RegisterPage from './pages/RegisterPage/RegisterPage'
 import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage'
+import TrialExpiredPage from './pages/TrialExpiredPage/TrialExpiredPage'
 import VeiculosPage from './pages/VeiculosPage/VeiculosPage'
 
 function App() {
@@ -85,6 +86,7 @@ function App() {
         }
       />
       <Route path="/criar-conta" element={<RegisterPage />} />
+      <Route path="/acesso-indisponivel" element={<TrialExpiredPage />} />
       <Route path="/esqueci-minha-senha" element={<ForgotPasswordPage />} />
       <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />

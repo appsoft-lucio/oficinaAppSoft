@@ -1,20 +1,50 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Navigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { ensureUserOficina } from '../../services/oficinas'
 
 type ProtectedRouteProps = {
   children: ReactNode
 }
 
+type Access = 'allowed' | 'denied' | 'developer' | 'expired' | 'inactive'
+
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   const [isLoading, setIsLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [access, setAccess] = useState<Access>('denied')
 
   useEffect(() => {
     async function checkSession() {
-      const { data } = await supabase.auth.getSession()
+      const { data } = await supabase.auth.getUser()
 
-      setIsAuthenticated(Boolean(data.session))
+      if (!data.user) {
+        setIsLoading(false)
+        return
+      }
+
+      const { data: admin } = await supabase
+        .from('app_admins')
+        .select('user_id')
+        .eq('user_id', data.user.id)
+        .maybeSingle()
+
+      if (admin) {
+        setAccess('developer')
+        setIsLoading(false)
+        return
+      }
+
+      try {
+        const oficina = await ensureUserOficina({ userId: data.user.id })
+        const trialExpired = oficina.trial_ends_at
+          ? new Date(oficina.trial_ends_at).getTime() <= Date.now()
+          : false
+
+        setAccess(oficina.status !== 'ativo' ? 'inactive' : trialExpired ? 'expired' : 'allowed')
+      } catch {
+        setAccess('denied')
+      }
+
       setIsLoading(false)
     }
 
@@ -34,8 +64,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     )
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
+  if (access === 'denied') return <Navigate to="/login" replace />
+  if (access === 'developer') return <Navigate to="/desenvolvedor" replace />
+  if (access === 'expired' || access === 'inactive') {
+    return <Navigate state={{ reason: access }} to="/acesso-indisponivel" replace />
   }
 
   return children

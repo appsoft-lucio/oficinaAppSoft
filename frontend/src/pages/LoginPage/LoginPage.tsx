@@ -42,10 +42,22 @@ export default function LoginPage() {
           return
         }
 
-        await ensureUserOficina({
+        const oficina = await ensureUserOficina({
           fallbackName: 'Oficina Demonstração',
           userId: data.user.id,
         })
+
+        const trialExpired = oficina.trial_ends_at
+          ? new Date(oficina.trial_ends_at).getTime() <= Date.now()
+          : false
+
+        if (oficina.status !== 'ativo' || trialExpired) {
+          setIsSubmitting(false)
+          navigate('/acesso-indisponivel', {
+            state: { reason: oficina.status !== 'ativo' ? 'inactive' : 'expired' },
+          })
+          return
+        }
       } catch {
         setIsSubmitting(false)
         setMessage('Login feito, mas não foi possível preparar a oficina.')
