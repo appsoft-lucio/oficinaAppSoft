@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, OPTIONS',
   'Access-Control-Allow-Origin': '*',
 }
 
@@ -69,6 +69,58 @@ Deno.serve(async (request) => {
       }))
 
       return json({ clients })
+    }
+
+    if (request.method === 'PATCH') {
+      const body = await request.json()
+      const clientId = String(body.clientId ?? '')
+      const status = String(body.status ?? '')
+
+      if (!clientId || !['ativo', 'suspenso'].includes(status)) {
+        return json({ error: 'Cliente ou status inválido.' }, 400)
+      }
+
+      const { data: workshop, error: workshopLookupError } = await adminClient
+        .from('oficinas')
+        .select('id, nome, dono_id, status, created_at')
+        .eq('id', clientId)
+        .single()
+
+      if (workshopLookupError || !workshop) {
+        return json({ error: 'Cliente não encontrado.' }, 404)
+      }
+
+      const { data: ownerData, error: authError } = await adminClient.auth.admin.updateUserById(
+        workshop.dono_id,
+        { ban_duration: status === 'suspenso' ? '876000h' : 'none' },
+      )
+
+      if (authError) throw authError
+
+      const { data: updatedWorkshop, error: updateError } = await adminClient
+        .from('oficinas')
+        .update({ status })
+        .eq('id', clientId)
+        .select('id, nome, status, created_at')
+        .single()
+
+      if (updateError) {
+        await adminClient.auth.admin.updateUserById(workshop.dono_id, {
+          ban_duration: workshop.status === 'suspenso' ? '876000h' : 'none',
+        })
+        throw updateError
+      }
+
+      return json({
+        client: {
+          id: updatedWorkshop.id,
+          nome: updatedWorkshop.nome,
+          ownerEmail: ownerData.user.email ?? 'E-mail indisponível',
+          ownerName: String(ownerData.user.user_metadata?.full_name ?? 'Responsável'),
+          status: updatedWorkshop.status,
+          createdAt: updatedWorkshop.created_at,
+        },
+      })
     }
 
     if (request.method !== 'POST') {

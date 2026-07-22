@@ -53,3 +53,16 @@ export async function createSystemClient(params: CreateSystemClientParams) {
 
   return data.client
 }
+
+export async function updateSystemClientStatus(clientId: string, status: 'ativo' | 'suspenso') {
+  const { data, error } = await supabase.functions.invoke<ClientsResponse>('developer-clients', {
+    body: { clientId, status },
+    method: 'PATCH',
+  })
+
+  if (error) throw new Error(error.message)
+  if (data?.error) throw new Error(data.error)
+  if (!data?.client) throw new Error('A função não retornou o cliente atualizado.')
+
+  return data.client
+}

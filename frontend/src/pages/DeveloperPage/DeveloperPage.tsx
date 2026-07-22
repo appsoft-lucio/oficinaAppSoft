@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import {
   createSystemClient,
   listSystemClients,
+  updateSystemClientStatus,
   type SystemClient,
 } from '../../services/developer'
 
@@ -25,6 +26,7 @@ export default function DeveloperPage() {
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [updatingClientId, setUpdatingClientId] = useState('')
 
   useEffect(() => {
     listSystemClients()
@@ -56,6 +58,28 @@ export default function DeveloperPage() {
   async function handleLogout() {
     await supabase.auth.signOut()
     navigate('/login')
+  }
+
+  async function handleStatusChange(client: SystemClient) {
+    const nextStatus = client.status === 'ativo' ? 'suspenso' : 'ativo'
+    setMessage('')
+    setUpdatingClientId(client.id)
+
+    try {
+      const updatedClient = await updateSystemClientStatus(client.id, nextStatus)
+      setClients((current) =>
+        current.map((item) => (item.id === updatedClient.id ? updatedClient : item)),
+      )
+      setMessage(
+        nextStatus === 'ativo'
+          ? 'Cliente ativado e acesso liberado.'
+          : 'Cliente inativado e acesso bloqueado.',
+      )
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Não foi possível alterar o status.')
+    } finally {
+      setUpdatingClientId('')
+    }
   }
 
   return (
@@ -127,9 +151,19 @@ export default function DeveloperPage() {
                   <strong className="block font-black">{client.nome}</strong>
                   <span className="mt-1 block text-sm text-slate-500">{client.ownerName} · {client.ownerEmail}</span>
                 </div>
-                <div className="text-left sm:text-right">
-                  <span className="inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-black uppercase text-emerald-700">{client.status}</span>
+                <div className="flex items-center gap-3 sm:justify-end">
+                  <div className="text-left sm:text-right">
+                  <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black uppercase ${client.status === 'ativo' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>{client.status === 'ativo' ? 'Ativo' : 'Inativo'}</span>
                   <time className="mt-1 block text-xs text-slate-400">{formatDate(client.createdAt)}</time>
+                  </div>
+                  <button
+                    className={`rounded-lg px-3 py-2 text-xs font-black text-white disabled:opacity-60 ${client.status === 'ativo' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-emerald-600 hover:bg-emerald-700'}`}
+                    disabled={updatingClientId === client.id}
+                    onClick={() => handleStatusChange(client)}
+                    type="button"
+                  >
+                    {updatingClientId === client.id ? 'Alterando...' : client.status === 'ativo' ? 'Inativar' : 'Ativar'}
+                  </button>
                 </div>
               </article>
             ))}
