@@ -24,6 +24,18 @@ export default function LoginPage() {
 
     if (error) {
       setIsSubmitting(false)
+      if (error.code === 'email_not_confirmed') {
+        setMessage(
+          'Este cadastro ainda aguarda confirmação. Exclua a conta pendente e cadastre novamente, ou confirme o e-mail no Supabase.',
+        )
+        return
+      }
+
+      if (error.code === 'user_banned') {
+        setMessage('Esta conta está inativa. Entre em contato com a Oficina AppSoft.')
+        return
+      }
+
       setMessage('Não foi possível entrar. Confira o e-mail e a senha.')
       return
     }
