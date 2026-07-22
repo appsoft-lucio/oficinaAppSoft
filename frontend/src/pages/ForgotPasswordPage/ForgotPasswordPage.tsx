@@ -21,6 +21,19 @@ export default function ForgotPasswordPage() {
     setIsSubmitting(false)
 
     if (error) {
+      const isRateLimit =
+        error.status === 429 ||
+        error.code?.includes('rate_limit') ||
+        error.message.toLowerCase().includes('rate limit') ||
+        error.message.toLowerCase().includes('after 60 seconds')
+
+      if (isRateLimit) {
+        setMessage(
+          'Limite de envios atingido. Aguarde antes de tentar novamente. Não é necessário abrir um chamado; seu acesso continua seguro.',
+        )
+        return
+      }
+
       setMessage('Não foi possível enviar o link. Confira o e-mail e tente novamente.')
       return
     }
