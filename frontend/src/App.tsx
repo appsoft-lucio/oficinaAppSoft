@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/auth/ProtectedRoute'
+import DeveloperRoute from './components/auth/DeveloperRoute'
 import ClientesPage from './pages/ClientesPage/ClientesPage'
 import DashboardPage from './pages/DashboardPage/DashboardPage'
+import DeveloperPage from './pages/DeveloperPage/DeveloperPage'
 import DocumentoPage from './pages/DocumentoPage/DocumentoPage'
 import FinanceiroPage from './pages/FinanceiroPage/FinanceiroPage'
 import FiscalPage from './pages/FiscalPage/FiscalPage'
@@ -10,6 +12,7 @@ import HomePage from './pages/HomePage/HomePage'
 import LoginPage from './pages/LoginPage/LoginPage'
 import OrdensPage from './pages/OrdensPage/OrdensPage'
 import RegisterPage from './pages/RegisterPage/RegisterPage'
+import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage'
 import VeiculosPage from './pages/VeiculosPage/VeiculosPage'
 
 function App() {
@@ -17,6 +20,14 @@ function App() {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route
+        path="/desenvolvedor"
+        element={
+          <DeveloperRoute>
+            <DeveloperPage />
+          </DeveloperRoute>
+        }
+      />
       <Route
         path="/dashboard"
         element={
@@ -75,6 +86,7 @@ function App() {
       />
       <Route path="/criar-conta" element={<RegisterPage />} />
       <Route path="/esqueci-minha-senha" element={<ForgotPasswordPage />} />
+      <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

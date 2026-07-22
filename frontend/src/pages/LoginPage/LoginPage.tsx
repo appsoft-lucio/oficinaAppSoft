@@ -30,6 +30,18 @@ export default function LoginPage() {
 
     if (data.user) {
       try {
+        const { data: developerAccess } = await supabase
+          .from('app_admins')
+          .select('user_id')
+          .eq('user_id', data.user.id)
+          .maybeSingle()
+
+        if (developerAccess) {
+          setIsSubmitting(false)
+          navigate('/desenvolvedor')
+          return
+        }
+
         await ensureUserOficina({
           fallbackName: 'Oficina Demonstração',
           userId: data.user.id,
