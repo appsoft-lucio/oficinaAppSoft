@@ -55,7 +55,7 @@ export default function LoginPage() {
         }
 
         const oficina = await ensureUserOficina({
-          fallbackName: 'Oficina Demonstração',
+          fallbackName: String(data.user.user_metadata.workshop_name || 'Minha Oficina'),
           userId: data.user.id,
         })
 

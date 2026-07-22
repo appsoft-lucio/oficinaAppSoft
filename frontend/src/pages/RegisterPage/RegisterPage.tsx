@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase'
 export default function RegisterPage() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
+  const [workshopName, setWorkshopName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
@@ -23,6 +24,7 @@ export default function RegisterPage() {
       options: {
         data: {
           full_name: name,
+          workshop_name: workshopName,
         },
         emailRedirectTo: `${window.location.origin}/login`,
       },
@@ -65,6 +67,15 @@ export default function RegisterPage() {
           placeholder="Seu nome"
           required
           value={name}
+        />
+        <AuthField
+          autoComplete="organization"
+          label="Nome da oficina"
+          name="workshopName"
+          onChange={setWorkshopName}
+          placeholder="Ex.: Oficina do Lúcio"
+          required
+          value={workshopName}
         />
         <AuthField
           autoComplete="email"

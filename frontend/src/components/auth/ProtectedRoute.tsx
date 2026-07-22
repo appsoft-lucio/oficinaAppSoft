@@ -35,7 +35,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
       }
 
       try {
-        const oficina = await ensureUserOficina({ userId: data.user.id })
+        const oficina = await ensureUserOficina({
+          fallbackName: String(data.user.user_metadata.workshop_name || 'Minha Oficina'),
+          userId: data.user.id,
+        })
         const trialExpired = oficina.trial_ends_at
           ? new Date(oficina.trial_ends_at).getTime() <= Date.now()
           : false
