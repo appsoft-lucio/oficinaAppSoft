@@ -17,6 +17,14 @@ export type CreateSystemClientParams = {
   workshopName: string
 }
 
+export type UpdateSystemClientParams = {
+  clientId: string
+  email: string
+  ownerName: string
+  password?: string
+  workshopName: string
+}
+
 type ClientsResponse = {
   clients?: SystemClient[]
   client?: SystemClient
@@ -58,6 +66,19 @@ export async function createSystemClient(params: CreateSystemClientParams) {
 export async function updateSystemClientStatus(clientId: string, status: 'ativo' | 'suspenso') {
   const { data, error } = await supabase.functions.invoke<ClientsResponse>('developer-clients', {
     body: { clientId, status },
+    method: 'PATCH',
+  })
+
+  if (error) throw new Error(error.message)
+  if (data?.error) throw new Error(data.error)
+  if (!data?.client) throw new Error('A função não retornou o cliente atualizado.')
+
+  return data.client
+}
+
+export async function updateSystemClient(params: UpdateSystemClientParams) {
+  const { data, error } = await supabase.functions.invoke<ClientsResponse>('developer-clients', {
+    body: params,
     method: 'PATCH',
   })
 

@@ -75,10 +75,10 @@ Deno.serve(async (request) => {
     if (request.method === 'PATCH') {
       const body = await request.json()
       const clientId = String(body.clientId ?? '')
-      const status = String(body.status ?? '')
+      const status = body.status === undefined ? '' : String(body.status)
 
-      if (!clientId || !['ativo', 'suspenso'].includes(status)) {
-        return json({ error: 'Cliente ou status inválido.' }, 400)
+      if (!clientId) {
+        return json({ error: 'Cliente inválido.' }, 400)
       }
 
       const { data: workshop, error: workshopLookupError } = await adminClient
@@ -89,6 +89,72 @@ Deno.serve(async (request) => {
 
       if (workshopLookupError || !workshop) {
         return json({ error: 'Cliente não encontrado.' }, 404)
+      }
+
+      if (!status) {
+        const email = String(body.email ?? '').trim().toLowerCase()
+        const ownerName = String(body.ownerName ?? '').trim()
+        const password = String(body.password ?? '')
+        const workshopName = String(body.workshopName ?? '').trim()
+
+        if (!email || !ownerName || !workshopName || (password && password.length < 8)) {
+          return json({
+            error: 'Preencha nome, responsável e e-mail; a nova senha deve ter no mínimo 8 caracteres.',
+          }, 400)
+        }
+
+        const { data: currentOwner, error: currentOwnerError } =
+          await adminClient.auth.admin.getUserById(workshop.dono_id)
+
+        if (currentOwnerError || !currentOwner.user) {
+          return json({ error: 'Responsável pelo cliente não encontrado.' }, 404)
+        }
+
+        const { data: updatedWorkshop, error: updateError } = await adminClient
+          .from('oficinas')
+          .update({ nome: workshopName })
+          .eq('id', clientId)
+          .select('id, nome, status, trial_ends_at, created_at')
+          .single()
+
+        if (updateError) {
+          throw updateError
+        }
+
+        const { data: ownerData, error: authError } =
+          await adminClient.auth.admin.updateUserById(workshop.dono_id, {
+            email,
+            email_confirm: true,
+            ...(password ? { password } : {}),
+            user_metadata: {
+              ...currentOwner.user.user_metadata,
+              full_name: ownerName,
+            },
+          })
+
+        if (authError) {
+          await adminClient
+            .from('oficinas')
+            .update({ nome: workshop.nome })
+            .eq('id', clientId)
+          return json({ error: authError.message }, 400)
+        }
+
+        return json({
+          client: {
+            id: updatedWorkshop.id,
+            nome: updatedWorkshop.nome,
+            ownerEmail: ownerData.user.email ?? email,
+            ownerName: String(ownerData.user.user_metadata?.full_name ?? ownerName),
+            status: updatedWorkshop.status,
+            trialEndsAt: updatedWorkshop.trial_ends_at,
+            createdAt: updatedWorkshop.created_at,
+          },
+        })
+      }
+
+      if (!['ativo', 'suspenso'].includes(status)) {
+        return json({ error: 'Status inválido.' }, 400)
       }
 
       const { data: ownerData, error: authError } = await adminClient.auth.admin.updateUserById(
