@@ -61,6 +61,7 @@ Deno.serve(async (request) => {
         return {
           id: workshop.id,
           nome: workshop.nome,
+          username: String(data.user?.user_metadata?.username ?? ''),
           ownerEmail: data.user?.email ?? 'E-mail indisponível',
           ownerName: String(data.user?.user_metadata?.full_name ?? 'Responsável'),
           status: workshop.status,
@@ -92,6 +93,7 @@ Deno.serve(async (request) => {
       }
 
       if (!status) {
+        const username = String(body.username ?? '').trim().toLowerCase()
         const email = String(body.email ?? '').trim().toLowerCase()
         const ownerName = String(body.ownerName ?? '').trim()
         const password = String(body.password ?? '')
@@ -101,6 +103,18 @@ Deno.serve(async (request) => {
           return json({
             error: 'Preencha nome, responsável e e-mail; a nova senha deve ter no mínimo 8 caracteres.',
           }, 400)
+        }
+
+        if (username && !/^[a-z0-9_]{3,30}$/.test(username)) {
+          return json({ error: 'O usuário deve ter de 3 a 30 letras sem acentos, números ou _.' }, 400)
+        }
+        if (username) {
+          const { data: existing, error: lookupError } = await adminClient.from('login_usernames')
+            .select('user_id').eq('username', username).maybeSingle()
+          if (lookupError) throw lookupError
+          if (existing && existing.user_id !== workshop.dono_id) {
+            return json({ error: 'Este nome de usuário já está em uso.' }, 409)
+          }
         }
 
         const { data: currentOwner, error: currentOwnerError } =
@@ -129,6 +143,7 @@ Deno.serve(async (request) => {
             user_metadata: {
               ...currentOwner.user.user_metadata,
               full_name: ownerName,
+              ...(username ? { username } : {}),
             },
           })
 
@@ -144,6 +159,7 @@ Deno.serve(async (request) => {
           client: {
             id: updatedWorkshop.id,
             nome: updatedWorkshop.nome,
+            username: String(ownerData.user.user_metadata?.username ?? ''),
             ownerEmail: ownerData.user.email ?? email,
             ownerName: String(ownerData.user.user_metadata?.full_name ?? ownerName),
             status: updatedWorkshop.status,
@@ -182,6 +198,7 @@ Deno.serve(async (request) => {
         client: {
           id: updatedWorkshop.id,
           nome: updatedWorkshop.nome,
+          username: String(ownerData.user.user_metadata?.username ?? ''),
           ownerEmail: ownerData.user.email ?? 'E-mail indisponível',
           ownerName: String(ownerData.user.user_metadata?.full_name ?? 'Responsável'),
           status: updatedWorkshop.status,
@@ -196,6 +213,7 @@ Deno.serve(async (request) => {
     }
 
     const body = await request.json()
+    const username = String(body.username ?? '').trim().toLowerCase()
     const email = String(body.email ?? '').trim().toLowerCase()
     const ownerName = String(body.ownerName ?? '').trim()
     const password = String(body.password ?? '')
@@ -205,11 +223,19 @@ Deno.serve(async (request) => {
       return json({ error: 'Preencha os campos; a senha deve ter no mínimo 8 caracteres.' }, 400)
     }
 
+    if (!/^[a-z0-9_]{3,30}$/.test(username)) {
+      return json({ error: 'O usuário deve ter de 3 a 30 letras sem acentos, números ou _.' }, 400)
+    }
+    const { data: existing, error: lookupError } = await adminClient.from('login_usernames')
+      .select('user_id').eq('username', username).maybeSingle()
+    if (lookupError) throw lookupError
+    if (existing) return json({ error: 'Este nome de usuário já está em uso.' }, 409)
+
     const { data: createdUser, error: createUserError } = await adminClient.auth.admin.createUser({
       email,
       email_confirm: true,
       password,
-      user_metadata: { full_name: ownerName },
+      user_metadata: { full_name: ownerName, username },
     })
 
     if (createUserError || !createdUser.user) {
@@ -233,6 +259,7 @@ Deno.serve(async (request) => {
         nome: workshop.nome,
         ownerEmail: email,
         ownerName,
+        username,
         status: workshop.status,
         trialEndsAt: workshop.trial_ends_at,
         createdAt: workshop.created_at,

@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
+  const [username, setUsername] = useState('')
   const [name, setName] = useState('')
   const [workshopName, setWorkshopName] = useState('')
   const [email, setEmail] = useState('')
@@ -16,13 +17,18 @@ export default function RegisterPage() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setMessage('')
+    if (!/^[a-z0-9_]{3,30}$/.test(username.trim().toLowerCase())) {
+      setMessage('O usuário deve ter de 3 a 30 caracteres: letras sem acentos, números ou _.')
+      return
+    }
     setIsSubmitting(true)
 
     const { data, error } = await supabase.auth.signUp({
-      email,
+      email: email.trim(),
       password,
       options: {
         data: {
+          username: username.trim().toLowerCase(),
           full_name: name,
           workshop_name: workshopName,
         },
@@ -33,7 +39,7 @@ export default function RegisterPage() {
     setIsSubmitting(false)
 
     if (error) {
-      setMessage('Não foi possível criar a conta. Confira os dados e tente novamente.')
+      setMessage('Não foi possível criar a conta. Confira os dados ou tente outro nome de usuário.')
       return
     }
 
@@ -77,6 +83,16 @@ export default function RegisterPage() {
           required
           value={workshopName}
         />
+        <AuthField
+          autoComplete="username"
+          label="Nome de usuário"
+          name="username"
+          onChange={setUsername}
+          placeholder="Ex.: lucio_dev"
+          required
+          value={username}
+        />
+        <p className="text-sm text-slate-500">Use de 3 a 30 letras sem acentos, números ou _. Você poderá entrar com este usuário ou seu e-mail.</p>
         <AuthField
           autoComplete="email"
           label="E-mail"

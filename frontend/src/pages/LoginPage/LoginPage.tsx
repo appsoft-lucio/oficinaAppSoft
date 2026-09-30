@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import AuthField from '../../components/auth/AuthField'
 import AuthLayout from '../../components/auth/AuthLayout'
 import { supabase } from '../../lib/supabase'
+import { loginWithIdentifier } from '../../services/login'
 import { ensureUserOficina } from '../../services/oficinas'
 
 export default function LoginPage() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -17,10 +18,15 @@ export default function LoginPage() {
     setMessage('')
     setIsSubmitting(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    let result
+    try {
+      result = await loginWithIdentifier(identifier, password)
+    } catch {
+      setIsSubmitting(false)
+      setMessage('Não foi possível conectar. Tente novamente.')
+      return
+    }
+    const { data, error } = result
 
     if (error) {
       setIsSubmitting(false)
@@ -36,7 +42,7 @@ export default function LoginPage() {
         return
       }
 
-      setMessage('Não foi possível entrar. Confira o e-mail e a senha.')
+      setMessage('Não foi possível entrar. Confira o e-mail ou usuário e a senha.')
       return
     }
 
@@ -96,14 +102,14 @@ export default function LoginPage() {
 
       <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
         <AuthField
-          autoComplete="email"
-          label="E-mail"
-          name="email"
-          onChange={setEmail}
-          placeholder="seuemail@exemplo.com"
+          autoComplete="username"
+          label="E-mail ou usuário"
+          name="identifier"
+          onChange={setIdentifier}
+          placeholder="seuemail@exemplo.com ou seu_usuario"
           required
-          type="email"
-          value={email}
+          type="text"
+          value={identifier}
         />
         <AuthField
           autoComplete="current-password"

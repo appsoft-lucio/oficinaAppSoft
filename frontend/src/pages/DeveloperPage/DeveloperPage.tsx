@@ -20,6 +20,8 @@ function formatDate(value: string) {
 export default function DeveloperPage() {
   const navigate = useNavigate()
   const [clients, setClients] = useState<SystemClient[]>([])
+  const [username, setUsername] = useState('')
+  const [editUsername, setEditUsername] = useState('')
   const [email, setEmail] = useState('')
   const [ownerName, setOwnerName] = useState('')
   const [password, setPassword] = useState('')
@@ -47,9 +49,10 @@ export default function DeveloperPage() {
     setIsSubmitting(true)
 
     try {
-      const client = await createSystemClient({ email, ownerName, password, workshopName })
+      const client = await createSystemClient({ email, username, ownerName, password, workshopName })
       setClients((current) => [client, ...current])
       setEmail('')
+      setUsername('')
       setOwnerName('')
       setPassword('')
       setWorkshopName('')
@@ -91,6 +94,7 @@ export default function DeveloperPage() {
   function startEditing(client: SystemClient) {
     setEditingClient(client)
     setEditEmail(client.ownerEmail)
+    setEditUsername(client.username || '')
     setEditOwnerName(client.ownerName)
     setEditPassword('')
     setEditWorkshopName(client.nome)
@@ -108,6 +112,7 @@ export default function DeveloperPage() {
       const updatedClient = await updateSystemClient({
         clientId: editingClient.id,
         email: editEmail,
+        username: editUsername,
         ownerName: editOwnerName,
         password: editPassword || undefined,
         workshopName: editWorkshopName,
@@ -160,6 +165,11 @@ export default function DeveloperPage() {
               <input className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100" onChange={(event) => setOwnerName(event.target.value)} required value={ownerName} />
             </label>
             <label className="block text-sm font-black text-slate-700">
+              Nome de usuário
+              <input className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100" autoCapitalize="none" autoComplete="off" spellCheck={false} pattern="[A-Za-z0-9_]{3,30}" maxLength={30} onChange={(event) => setUsername(event.target.value)} required value={username} />
+              <span className="mt-1 block text-xs font-normal text-slate-500">Use de 3 a 30 letras sem acentos, números ou _. </span>
+            </label>
+            <label className="block text-sm font-black text-slate-700">
               E-mail de acesso
               <input className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100" onChange={(event) => setEmail(event.target.value)} required type="email" value={email} />
             </label>
@@ -193,6 +203,7 @@ export default function DeveloperPage() {
                 <div>
                   <strong className="block font-black">{client.nome}</strong>
                   <span className="mt-1 block text-sm text-slate-500">{client.ownerName} · {client.ownerEmail}</span>
+                  <span className="mt-1 block text-sm text-slate-500">Usuário: {client.username || 'Não definido'}</span>
                   {client.trialEndsAt ? (
                     <span className="mt-1 block text-xs font-bold text-orange-600">
                       Avaliação até {formatDate(client.trialEndsAt)}
@@ -261,6 +272,11 @@ export default function DeveloperPage() {
                 <input className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100" onChange={(event) => setEditOwnerName(event.target.value)} required value={editOwnerName} />
               </label>
               <label className="block text-sm font-black text-slate-700">
+              Nome de usuário
+              <input className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100" autoCapitalize="none" autoComplete="off" spellCheck={false} pattern="[A-Za-z0-9_]{3,30}" maxLength={30} onChange={(event) => setEditUsername(event.target.value)}  value={editUsername} />
+              <span className="mt-1 block text-xs font-normal text-slate-500">Use de 3 a 30 letras sem acentos, números ou _. Deixe em branco para manter o usuário atual.</span>
+            </label>
+            <label className="block text-sm font-black text-slate-700">
                 E-mail de acesso
                 <input className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100" onChange={(event) => setEditEmail(event.target.value)} required type="email" value={editEmail} />
               </label>

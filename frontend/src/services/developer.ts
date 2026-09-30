@@ -1,9 +1,11 @@
+import { FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
 export type SystemClient = {
   id: string
   nome: string
   ownerEmail: string
+  username: string
   ownerName: string
   status: string
   trialEndsAt: string | null
@@ -12,6 +14,7 @@ export type SystemClient = {
 
 export type CreateSystemClientParams = {
   email: string
+  username: string
   ownerName: string
   password: string
   workshopName: string
@@ -20,6 +23,7 @@ export type CreateSystemClientParams = {
 export type UpdateSystemClientParams = {
   clientId: string
   email: string
+  username: string
   ownerName: string
   password?: string
   workshopName: string
@@ -31,6 +35,16 @@ type ClientsResponse = {
   error?: string
 }
 
+async function clientError(error: Error) {
+  if (error instanceof FunctionsHttpError) {
+    try {
+      const body = await error.context.json()
+      if (typeof body?.error === 'string') return new Error(body.error)
+    } catch { /* Use the transport error if the response has no JSON body. */ }
+  }
+  return new Error(error.message)
+}
+
 async function invokeClients(body?: CreateSystemClientParams) {
   const { data, error } = await supabase.functions.invoke<ClientsResponse>(
     'developer-clients',
@@ -38,7 +52,7 @@ async function invokeClients(body?: CreateSystemClientParams) {
   )
 
   if (error) {
-    throw new Error(error.message)
+    throw await clientError(error)
   }
 
   if (data?.error) {
@@ -69,7 +83,7 @@ export async function updateSystemClientStatus(clientId: string, status: 'ativo'
     method: 'PATCH',
   })
 
-  if (error) throw new Error(error.message)
+  if (error) throw await clientError(error)
   if (data?.error) throw new Error(data.error)
   if (!data?.client) throw new Error('A função não retornou o cliente atualizado.')
 
@@ -82,7 +96,7 @@ export async function updateSystemClient(params: UpdateSystemClientParams) {
     method: 'PATCH',
   })
 
-  if (error) throw new Error(error.message)
+  if (error) throw await clientError(error)
   if (data?.error) throw new Error(data.error)
   if (!data?.client) throw new Error('A função não retornou o cliente atualizado.')
 
