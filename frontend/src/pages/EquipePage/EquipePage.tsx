@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { ensureUserOficina, type Oficina } from '../../services/oficinas'
 import { createGerente, listGerentes, setGerenteAtivo, listAtividades, type Gerente, type Atividade } from '../../services/equipe'
 
-const tabelas: Record<string, string> = { clientes: 'Cliente', veiculos: 'Veículo', mecanicos: 'Mecânico', ordens_servico: 'Ordem de serviço', ordem_pecas: 'Peça da ordem', veiculo_proprietarios: 'Histórico de proprietário' }
+const tabelas: Record<string, string> = { clientes: 'Cliente', veiculos: 'Veículo', mecanicos: 'Mecânico', ordens_servico: 'Ordem de serviço', ordem_pecas: 'Peça da ordem', veiculo_proprietarios: 'Histórico de proprietário', lancamentos_financeiros: 'Lançamento financeiro' }
 const acoes: Record<string, string> = { INSERT: 'Cadastro', UPDATE: 'Alteração', DELETE: 'Exclusão' }
 
 export default function EquipePage() {

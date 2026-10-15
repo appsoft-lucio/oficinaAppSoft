@@ -14,6 +14,7 @@ import {
 import { listVeiculos, type Veiculo } from '../../services/veiculos'
 import { listMecanicos, type Mecanico } from '../../services/mecanicos'
 import { calcularRepasses } from '../../services/repasses'
+import CaixaPanel from '../../components/dashboard/CaixaPanel'
 
 const pagamentoStatusOptions = [
   { label: 'Em aberto', value: 'em_aberto' },
@@ -49,7 +50,7 @@ function getCurrentMonthKey() {
 }
 
 function getDateInputValue(date: Date) {
-  return date.toISOString().slice(0, 10)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
 function getStartOfMonth(date: Date) {
@@ -157,6 +158,7 @@ export default function FinanceiroPage() {
   const [veiculoFilter, setVeiculoFilter] = useState('todos')
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
   const oficinaName = oficina?.nome ?? 'Minha Oficina'
+  const caixaPeriod = getPeriodRange(periodFilter, customStartDate, customEndDate)
 
   const clientesById = useMemo(() => {
     return clientes.reduce<Record<string, Cliente>>((acc, cliente) => {
@@ -521,10 +523,15 @@ export default function FinanceiroPage() {
             ) : null}
           </section>
 
+          {oficina ? <CaixaPanel oficinaId={oficina.id} mecanicos={mecanicos} revision={ordens}
+            start={caixaPeriod.start ? getDateInputValue(caixaPeriod.start) : null}
+            end={caixaPeriod.end ? getDateInputValue(caixaPeriod.end) : null}
+            invalidPeriod={periodFilter === 'personalizado' && (!customStartDate || !customEndDate || customStartDate > customEndDate)} /> : null}
+
           <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <SummaryCard
-              detail={`${filteredOrdens.length} ordem(ns) filtradas`}
-              label="Recebido no período"
+              detail="Ordens filtradas pela data de abertura"
+              label="Recebido nas ordens filtradas"
               value={formatCurrency(totalRecebido)}
             />
             <SummaryCard
