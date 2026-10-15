@@ -1,3 +1,4 @@
+import CadastroEditDialog from '../../components/dashboard/CadastroEditDialog'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
@@ -12,6 +13,7 @@ import { buscarVeiculoDuplicado, normalizarPlaca, prepararTransferencia, transfe
 import type { OrdemServico } from '../../services/ordens'
 
 export default function VeiculosPage() {
+  const [editingRegistro, setEditingRegistro] = useState<Veiculo | null>(null)
   const [ano, setAno] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
@@ -154,6 +156,11 @@ export default function VeiculosPage() {
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950 lg:grid lg:grid-cols-[280px_1fr]">
+      {editingRegistro && oficina ? <CadastroEditDialog tipo="veiculo" registro={editingRegistro} oficinaId={oficina.id}
+        onCancel={() => setEditingRegistro(null)} onSaved={(updated) => {
+          setVeiculos((current) => current.map((item) => item.id === updated.id ? updated : item))
+          setEditingRegistro(null)
+        }} /> : null}
       {transferencia ? <TransferenciaDialog
         veiculo={transferencia.veiculo}
         anterior={clientesById[transferencia.veiculo.cliente_id ?? '']?.nome ?? 'Não informado'}
@@ -348,6 +355,7 @@ export default function VeiculosPage() {
                           : `${veiculo.quilometragem.toLocaleString('pt-BR')} km`}
                       </span>
                     </div>
+                    <button type="button" onClick={() => setEditingRegistro(veiculo)} className="mt-4 mr-2 min-h-10 rounded-lg border border-orange-200 px-3 text-sm font-bold text-orange-700">Editar</button>
                     <Link className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 text-sm font-bold" to={`/historico/veiculos/${veiculo.id}`}>Ver histórico</Link>
                     <form className="mt-3 flex flex-wrap gap-2" onSubmit={(event) => {
                       event.preventDefault()

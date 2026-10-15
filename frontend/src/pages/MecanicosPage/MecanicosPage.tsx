@@ -1,3 +1,4 @@
+import CadastroEditDialog from '../../components/dashboard/CadastroEditDialog'
 import { useEffect, useState } from 'react'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
 import DashboardTopbar from '../../components/dashboard/DashboardTopbar'
@@ -7,6 +8,7 @@ import { ensureUserOficina, type Oficina } from '../../services/oficinas'
 import { databaseErrorMessage } from '../../services/databaseErrors'
 
 export default function MecanicosPage() {
+  const [editingRegistro, setEditingRegistro] = useState<Mecanico | null>(null)
   const [mecanicos, setMecanicos] = useState<Mecanico[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [loadError, setLoadError] = useState('')
@@ -78,6 +80,11 @@ export default function MecanicosPage() {
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950 lg:grid lg:grid-cols-[280px_1fr]">
+      {editingRegistro && oficina ? <CadastroEditDialog tipo="mecanico" registro={editingRegistro} oficinaId={oficina.id}
+        onCancel={() => setEditingRegistro(null)} onSaved={(updated) => {
+          setMecanicos((current) => current.map((item) => item.id === updated.id ? updated : item))
+          setEditingRegistro(null)
+        }} /> : null}
       {isMenuOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
@@ -199,6 +206,7 @@ export default function MecanicosPage() {
                       <span>{mecanico.telefone || 'Telefone não informado'}</span>
                       <span>{mecanico.email || 'E-mail não informado'}</span>
                     </div>
+                    <button type="button" onClick={() => setEditingRegistro(mecanico)} className="mt-4 mr-2 min-h-10 rounded-lg border border-orange-200 px-3 text-sm font-bold text-orange-700">Editar</button>
                   </article>
                 ))
               ) : (

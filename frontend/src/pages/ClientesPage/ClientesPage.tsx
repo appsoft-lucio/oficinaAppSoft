@@ -1,3 +1,4 @@
+import CadastroEditDialog from '../../components/dashboard/CadastroEditDialog'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
@@ -7,6 +8,7 @@ import { createCliente, listClientes, type Cliente } from '../../services/client
 import { ensureUserOficina, type Oficina } from '../../services/oficinas'
 
 export default function ClientesPage() {
+  const [editingRegistro, setEditingRegistro] = useState<Cliente | null>(null)
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [email, setEmail] = useState('')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -74,6 +76,11 @@ export default function ClientesPage() {
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950 lg:grid lg:grid-cols-[280px_1fr]">
+      {editingRegistro && oficina ? <CadastroEditDialog tipo="cliente" registro={editingRegistro} oficinaId={oficina.id}
+        onCancel={() => setEditingRegistro(null)} onSaved={(updated) => {
+          setClientes((current) => current.map((item) => item.id === updated.id ? updated : item))
+          setEditingRegistro(null)
+        }} /> : null}
       {isMenuOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
@@ -190,6 +197,7 @@ export default function ClientesPage() {
                       <span>{cliente.email || 'E-mail não informado'}</span>
                     </div>
                     <Link className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 text-sm font-bold" to={`/historico/clientes/${cliente.id}`}>Ver histórico</Link>
+                    <button type="button" onClick={() => setEditingRegistro(cliente)} className="mt-4 mr-2 min-h-10 rounded-lg border border-orange-200 px-3 text-sm font-bold text-orange-700">Editar</button>
                   </article>
                 ))
               ) : (

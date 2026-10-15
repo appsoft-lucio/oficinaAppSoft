@@ -35,6 +35,24 @@ export async function listVeiculos(oficinaId: string) {
   return data
 }
 
+export async function updateVeiculo({ id, oficinaId, modelo, marca, placa, ano, quilometragem }: Omit<CreateVeiculoParams, 'clienteId'> & { id: string }) {
+  if (!modelo.trim()) throw new Error('Informe o modelo do veículo.')
+  if (!Number.isSafeInteger(quilometragem) || quilometragem < 0 || quilometragem > 2147483647) {
+    throw new Error('Informe uma quilometragem inteira maior ou igual a zero.')
+  }
+  const parsedAno = ano?.trim() ? Number(ano) : null
+  if (parsedAno !== null && (!Number.isInteger(parsedAno) || parsedAno < 1886 || parsedAno > 9999)) {
+    throw new Error('Informe um ano válido.')
+  }
+  const { data, error } = await supabase.from('veiculos').update({
+    modelo: modelo.trim(), marca: marca?.trim() || null, placa: placa?.trim() || null,
+    ano: parsedAno, quilometragem,
+  }).eq('id', id).eq('oficina_id', oficinaId)
+    .select('id, cliente_id, placa, marca, modelo, ano, quilometragem, created_at').single()
+  if (error) throw error
+  return data
+}
+
 export async function createVeiculo({
   ano,
   clienteId,

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
 import DashboardTopbar from '../../components/dashboard/DashboardTopbar'
 import { supabase } from '../../lib/supabase'
@@ -10,10 +10,15 @@ import {
   listOrdens,
   type OrdemServico,
   updateOrdemStatus,
+  updateOrdem,
+  getOrdem,
+  listOrdemPecas,
 } from '../../services/ordens'
 import { listVeiculos, type Veiculo } from '../../services/veiculos'
 import { listMecanicos, type Mecanico } from '../../services/mecanicos'
 import { calcularRepasses } from '../../services/repasses'
+import { databaseErrorMessage } from '../../services/databaseErrors'
+import { transferErrorMessage } from '../../services/vehicleHistory'
 
 const statusOptions = [
   { label: 'Aberta', value: 'aberta' },
@@ -93,6 +98,9 @@ function formatVoiceTranscript(value: string) {
 }
 
 export default function OrdensPage() {
+  const location = useLocation()
+  const [editingOrdem, setEditingOrdem] = useState<OrdemServico | null>(null)
+  const [isLoadingEdit, setIsLoadingEdit] = useState(false)
   const [clienteId, setClienteId] = useState('')
   const [mecanicos, setMecanicos] = useState<Mecanico[]>([])
   const [mecanicoIds, setMecanicoIds] = useState<string[]>([])
@@ -119,6 +127,13 @@ export default function OrdensPage() {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const oficinaName = oficina?.nome ?? 'Minha Oficina'
 
+  useEffect(() => {
+    if (location.hash !== '#nova-ordem') return
+    const section = document.getElementById('nova-ordem')
+    section?.scrollIntoView({ block: 'start' })
+    section?.querySelector<HTMLSelectElement>('select')?.focus({ preventScroll: true })
+  }, [location.hash, clientes.length, veiculos.length])
+
   const clientesById = useMemo(() => {
     return clientes.reduce<Record<string, Cliente>>((acc, cliente) => {
       acc[cliente.id] = cliente
@@ -134,8 +149,8 @@ export default function OrdensPage() {
   }, [veiculos])
 
   const filteredVeiculos = useMemo(() => {
-    return veiculos.filter((veiculo) => veiculo.cliente_id === clienteId)
-  }, [clienteId, veiculos])
+    return veiculos.filter((veiculo) => veiculo.cliente_id === clienteId || veiculo.id === editingOrdem?.veiculo_id)
+  }, [clienteId, veiculos, editingOrdem])
 
   const totalPecas = useMemo(() => {
     return pecas.reduce((total, peca) => {
@@ -179,9 +194,10 @@ export default function OrdensPage() {
   }, [])
 
   useEffect(() => {
+    if (editingOrdem) return
     const firstVeiculo = veiculos.find((veiculo) => veiculo.cliente_id === clienteId)
     setVeiculoId(firstVeiculo?.id ?? '')
-  }, [clienteId, veiculos])
+  }, [clienteId, veiculos, editingOrdem])
 
   useEffect(() => {
     return () => recognitionRef.current?.stop()
@@ -257,7 +273,7 @@ export default function OrdensPage() {
       return
     }
 
-    if (!clienteId || !veiculoId) {
+    if (!editingOrdem && (!clienteId || !veiculoId)) {
       setMessage('Cadastre cliente e veículo antes de abrir uma ordem.')
       return
     }
@@ -280,7 +296,7 @@ export default function OrdensPage() {
     setIsSubmitting(true)
 
     try {
-      const createdOrdem = await createOrdem({
+      const params = {
         clienteId,
         descricao,
         oficinaId: oficina.id,
@@ -292,9 +308,15 @@ export default function OrdensPage() {
         mecanicoIds,
         mecanicoDivisao,
         comissaoPercentual: Number(comissaoPercentual),
-      })
+      }
+      const createdOrdem = editingOrdem
+        ? await updateOrdem({ ...params, ordemId: editingOrdem.id })
+        : await createOrdem(params)
 
-      setOrdens((currentOrdens) => [createdOrdem, ...currentOrdens])
+      setOrdens((currentOrdens) => editingOrdem
+        ? currentOrdens.map((ordem) => ordem.id === createdOrdem.id ? createdOrdem : ordem)
+        : [createdOrdem, ...currentOrdens])
+      setEditingOrdem(null)
       setDescricao('')
       setEditingPecaIndex(null)
       setPecaDraft({ ...emptyPeca })
@@ -305,12 +327,39 @@ export default function OrdensPage() {
       setMecanicoIds([])
       setMecanicoDivisao({})
       setComissaoPercentual('')
-      setMessage('Ordem cadastrada com sucesso.')
-    } catch {
-      setMessage('Não foi possível cadastrar a ordem.')
+      setMessage(editingOrdem ? 'Ordem e comissão atualizadas com sucesso.' : 'Ordem cadastrada com sucesso.')
+    } catch (error) {
+      setMessage(databaseErrorMessage(error, transferErrorMessage(error)))
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  async function handleEditOrdem(ordemId: string) {
+    if (isSubmitting || isLoadingEdit) return
+    setIsLoadingEdit(true)
+    setStatusMessage('')
+    try {
+      const [ordem, loadedPecas] = await Promise.all([getOrdem(ordemId), listOrdemPecas(ordemId)])
+      recognitionRef.current?.stop()
+      setEditingOrdem(ordem)
+      setClienteId(ordem.cliente_id ?? '')
+      setVeiculoId(ordem.veiculo_id ?? '')
+      setTitulo(ordem.titulo); setDescricao(ordem.descricao ?? ''); setStatus(ordem.status)
+      setValor(String(ordem.valor_servico)); setComissaoPercentual(String(ordem.comissao_percentual))
+      setMecanicoIds(ordem.mecanico_ids); setMecanicoDivisao(ordem.mecanico_divisao)
+      setPecas(loadedPecas.map((peca) => ({ descricao: peca.descricao, quantidade: String(peca.quantidade), valorUnitario: String(peca.valor_unitario) })))
+      setEditingPecaIndex(null); setPecaDraft({ ...emptyPeca }); setMessage('')
+      document.getElementById('nova-ordem')?.scrollIntoView({ block: 'start' })
+    } catch (error) { setStatusMessage(databaseErrorMessage(error, transferErrorMessage(error))) }
+    finally { setIsLoadingEdit(false) }
+  }
+
+  function handleCancelEdit() {
+    setEditingOrdem(null); setDescricao(''); setTitulo(''); setValor(''); setStatus('aberta')
+    setPecas([]); setPecaDraft({ ...emptyPeca }); setEditingPecaIndex(null)
+    setMecanicoIds([]); setMecanicoDivisao({}); setComissaoPercentual(''); setMessage('')
+    setClienteId(clientes[0]?.id ?? '')
   }
 
   async function handleStatusChange(ordemId: string, nextStatus: string) {
@@ -410,8 +459,9 @@ export default function OrdensPage() {
         </DashboardTopbar>
 
         <div className="grid gap-6 px-5 py-6 sm:px-8 xl:grid-cols-[460px_1fr]">
-          <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-            <h2 className="text-xl font-black">Nova ordem</h2>
+          <section id="nova-ordem" className="scroll-mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <h2 className="text-xl font-black">{editingOrdem ? 'Editar ordem e comissão' : 'Nova ordem'}</h2>
+            {editingOrdem ? <p className="mt-2 text-sm font-bold text-orange-700">Cliente e veículo originais serão preservados. Valor recebido: {Number(editingOrdem.valor_pago).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}.</p> : null}
             <p className="mt-1 text-sm text-slate-500">
               Abra um serviço vinculando cliente, veículo, status e valor.
             </p>
@@ -420,7 +470,7 @@ export default function OrdensPage() {
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
                 Entre na sua conta para cadastrar e consultar ordens da oficina.
               </div>
-            ) : clientes.length === 0 || veiculos.length === 0 ? (
+            ) : !editingOrdem && (clientes.length === 0 || veiculos.length === 0) ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
                 Cadastre pelo menos um cliente e um veículo antes.{' '}
                 <Link className="underline" to="/clientes">
@@ -433,6 +483,7 @@ export default function OrdensPage() {
                   <span className="text-sm font-black text-slate-700">Cliente</span>
                   <select
                     className="mt-2 h-12 w-full rounded-lg border border-slate-300 bg-white px-4 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                    disabled={!!editingOrdem}
                     onChange={(event) => setClienteId(event.target.value)}
                     required
                     value={clienteId}
@@ -449,6 +500,7 @@ export default function OrdensPage() {
                   <span className="text-sm font-black text-slate-700">Veículo</span>
                   <select
                     className="mt-2 h-12 w-full rounded-lg border border-slate-300 bg-white px-4 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                    disabled={!!editingOrdem}
                     onChange={(event) => setVeiculoId(event.target.value)}
                     required
                     value={veiculoId}
@@ -733,11 +785,12 @@ export default function OrdensPage() {
 
                 <button
                   className="min-h-12 w-full rounded-lg bg-orange-600 px-6 font-black text-white transition hover:bg-orange-700 disabled:cursor-not-allowed disabled:opacity-70"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isLoadingEdit}
                   type="submit"
                 >
-                  {isSubmitting ? 'Salvando...' : 'Salvar ordem'}
+                  {isSubmitting ? 'Salvando...' : editingOrdem ? 'Salvar alterações' : 'Salvar ordem'}
                 </button>
+                {editingOrdem ? <button type="button" disabled={isSubmitting} onClick={handleCancelEdit} className="min-h-11 w-full rounded-lg border border-slate-300 px-4 font-bold">Cancelar edição</button> : null}
               </form>
             )}
           </section>
@@ -790,6 +843,9 @@ export default function OrdensPage() {
                           R$ {Number(ordem.valor).toFixed(2)}
                         </strong>
                         <div className="flex flex-wrap gap-2 sm:justify-end">
+                          <button type="button" disabled={isSubmitting || isLoadingEdit}
+                            onClick={() => handleEditOrdem(ordem.id)}
+                            className="min-h-10 rounded-lg border border-orange-200 px-3 py-2 text-xs font-black text-orange-700 disabled:opacity-50">Editar ordem / comissão</button>
                           <Link
                             className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-black text-slate-700 transition hover:bg-slate-50"
                             to={`/documentos/${ordem.id}/orcamento`}

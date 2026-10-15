@@ -11,6 +11,7 @@ import { getDashboardData } from '../../services/dashboard'
 import { ensureUserOficina, type Oficina } from '../../services/oficinas'
 import type { OrdemServico } from '../../services/ordens'
 import type { Veiculo } from '../../services/veiculos'
+import { gerarRelatorioCsv } from '../../services/relatorio'
 
 type DashboardSummaryItem = {
   detail: string
@@ -20,6 +21,9 @@ type DashboardSummaryItem = {
 
 export default function DashboardPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [message, setMessage] = useState('')
+  const [loadError, setLoadError] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [oficina, setOficina] = useState<Oficina | null>(null)
   const [ordens, setOrdens] = useState<OrdemServico[]>([])
@@ -50,8 +54,29 @@ export default function DashboardPage() {
       setVeiculos(dashboardData.veiculos)
     }
 
-    prepareOficina()
+    prepareOficina().catch(() => {
+      setLoadError(true)
+      setMessage('Não foi possível carregar o painel. Recarregue a página para tentar novamente.')
+    }).finally(() => setIsLoading(false))
   }, [])
+
+  function handleExport() {
+    if (isLoading || loadError || !oficina) return
+    try {
+      const csv = gerarRelatorioCsv(oficinaName, ordens, clientes, veiculos)
+      const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }))
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `relatorio-oficina-${new Date().toLocaleDateString('sv-SE')}.csv`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000)
+      setMessage(ordens.length ? 'Relatório CSV gerado. Confira os downloads do navegador.' : 'Relatório CSV gerado sem ordens de serviço cadastradas.')
+    } catch {
+      setMessage('Não foi possível gerar o relatório. Tente novamente.')
+    }
+  }
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950 lg:grid lg:grid-cols-[280px_1fr]">
@@ -94,15 +119,17 @@ export default function DashboardPage() {
 
       <section className="min-w-0">
         <DashboardTopbar onOpenMenu={() => setIsMenuOpen(true)}>
-          <Link to="/financeiro" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-black text-slate-700 transition hover:bg-slate-50">
-            Ver financeiro
-          </Link>
-          <Link to="/ordens" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700">
+          <button type="button" onClick={handleExport} disabled={isLoading || loadError || !oficina}
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-black text-slate-700 transition hover:bg-slate-50 disabled:opacity-50">
+            {isLoading ? 'Carregando...' : 'Exportar relatório'}
+          </button>
+          <Link to="/ordens#nova-ordem" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700">
             Nova ordem
           </Link>
         </DashboardTopbar>
 
         <div className="px-5 py-6 sm:px-8">
+          {message ? <p role={loadError ? 'alert' : 'status'} className="mb-5 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">{message}</p> : null}
           <section className="mb-6 rounded-2xl bg-slate-950 p-6 text-white">
             <p className="text-sm font-black uppercase tracking-[0.16em] text-orange-400">
               Visão geral

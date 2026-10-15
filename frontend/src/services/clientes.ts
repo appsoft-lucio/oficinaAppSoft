@@ -52,3 +52,13 @@ export async function createCliente({
 
   return data
 }
+
+export async function updateCliente({ id, oficinaId, nome, telefone, email }: CreateClienteParams & { id: string }) {
+  if (!nome.trim()) throw new Error('Informe o nome do cliente.')
+  const { data, error } = await supabase.from('clientes')
+    .update({ nome: nome.trim(), telefone: telefone?.trim() || null, email: email?.trim() || null })
+    .eq('id', id).eq('oficina_id', oficinaId)
+    .select('id, nome, telefone, email, created_at').single()
+  if (error) throw error
+  return data
+}

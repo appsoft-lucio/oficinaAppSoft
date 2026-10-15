@@ -52,3 +52,13 @@ export async function createMecanico({
 
   return data
 }
+
+export async function updateMecanico({ id, oficinaId, nome, telefone, email }: CreateMecanicoParams & { id: string }) {
+  if (!nome.trim()) throw new Error('Informe o nome do mecânico.')
+  const { data, error } = await supabase.from('mecanicos')
+    .update({ nome: nome.trim(), telefone: telefone?.trim() || null, email: email?.trim() || null })
+    .eq('id', id).eq('oficina_id', oficinaId)
+    .select('id, nome, telefone, email, created_at').single()
+  if (error) throw error
+  return data
+}

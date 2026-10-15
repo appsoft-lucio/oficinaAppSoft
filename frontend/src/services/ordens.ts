@@ -192,6 +192,26 @@ export async function createOrdem({
   return data
 }
 
+export async function updateOrdem({ ordemId, titulo, descricao, status, valor, pecas = [], mecanicoIds = [], mecanicoDivisao = {}, comissaoPercentual }: Omit<CreateOrdemParams, 'clienteId' | 'veiculoId' | 'oficinaId'> & { ordemId: string }) {
+  const valorServico = Number((valor || '0').replace(',', '.'))
+  if (!titulo.trim() || !Number.isFinite(valorServico) || valorServico < 0) throw new Error('Informe o serviço e um valor de mão de obra válido.')
+  if (!Number.isInteger(comissaoPercentual) || comissaoPercentual < 1 || comissaoPercentual > 100) throw new Error('Informe a comissão entre 1% e 100%.')
+  const parsedPecas = pecas.map((peca) => ({
+    descricao: peca.descricao.trim(),
+    quantidade: Number((peca.quantidade || '1').replace(',', '.')),
+    valor_unitario: Number((peca.valorUnitario || '0').replace(',', '.')),
+  }))
+  if (parsedPecas.some((peca) => !peca.descricao || !Number.isFinite(peca.quantidade) || peca.quantidade <= 0
+    || !Number.isFinite(peca.valor_unitario) || peca.valor_unitario < 0)) throw new Error('Confira a descrição, a quantidade e o valor das peças.')
+  const { data, error } = await supabase.rpc('editar_ordem', {
+    p_ordem_id: ordemId, p_titulo: titulo.trim(), p_descricao: descricao || '', p_status: status,
+    p_valor_servico: valorServico, p_pecas: parsedPecas, p_mecanico_ids: [...new Set(mecanicoIds)].sort(),
+    p_mecanico_divisao: mecanicoDivisao, p_comissao_percentual: comissaoPercentual,
+  }).single()
+  if (error) throw error
+  return data as OrdemServico
+}
+
 export async function updateOrdemNota({
   notaNumero,
   notaStatus,
