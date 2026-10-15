@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
 import DashboardTopbar from '../../components/dashboard/DashboardTopbar'
 import OrdersPanel from '../../components/dashboard/OrdersPanel'
@@ -24,7 +25,7 @@ export default function DashboardPage() {
   const [ordens, setOrdens] = useState<OrdemServico[]>([])
   const [summary, setSummary] = useState<DashboardSummaryItem[]>([])
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
+  const oficinaName = oficina?.nome ?? 'Minha Oficina'
 
   useEffect(() => {
     async function prepareOficina() {
@@ -35,7 +36,7 @@ export default function DashboardPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstração',
+        fallbackName: 'Minha Oficina',
         userId: data.user.id,
       })
 
@@ -93,12 +94,12 @@ export default function DashboardPage() {
 
       <section className="min-w-0">
         <DashboardTopbar onOpenMenu={() => setIsMenuOpen(true)}>
-          <button className="min-h-11 rounded-lg border border-slate-300 bg-white px-5 text-sm font-black text-slate-700 transition hover:bg-slate-50">
-            Exportar relatorio
-          </button>
-          <button className="min-h-11 rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700">
+          <Link to="/financeiro" className="inline-flex min-h-11 items-center justify-center rounded-lg border border-slate-300 bg-white px-5 text-sm font-black text-slate-700 transition hover:bg-slate-50">
+            Ver financeiro
+          </Link>
+          <Link to="/ordens" className="inline-flex min-h-11 items-center justify-center rounded-lg bg-orange-600 px-5 text-sm font-black text-white transition hover:bg-orange-700">
             Nova ordem
-          </button>
+          </Link>
         </DashboardTopbar>
 
         <div className="px-5 py-6 sm:px-8">
@@ -107,11 +108,11 @@ export default function DashboardPage() {
               Visão geral
             </p>
             <h2 className="mt-2 text-2xl font-black">
-              Olá. A {oficinaName} está em movimento.
+              Bem-vindo à {oficinaName}.
             </h2>
             <p className="mt-2 max-w-3xl text-slate-300">
-              Esta é a primeira tela logada do app. Os dados ainda são demonstrativos, mas
-              a estrutura já está pronta para conectar com Supabase.
+              Acompanhe os serviços da oficina, consulte clientes e veículos e mantenha
+              os recebimentos em dia. Tudo o que você precisa para organizar sua rotina em um só lugar.
             </p>
           </section>
 

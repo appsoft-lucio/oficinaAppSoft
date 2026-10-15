@@ -155,7 +155,7 @@ export default function FinanceiroPage() {
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [veiculoFilter, setVeiculoFilter] = useState('todos')
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
+  const oficinaName = oficina?.nome ?? 'Minha Oficina'
 
   const clientesById = useMemo(() => {
     return clientes.reduce<Record<string, Cliente>>((acc, cliente) => {
@@ -281,7 +281,7 @@ export default function FinanceiroPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstração',
+        fallbackName: 'Minha Oficina',
         userId: data.user.id,
       })
 
@@ -404,7 +404,7 @@ export default function FinanceiroPage() {
         <div className="px-5 py-6 sm:px-8">
           {requiresRealLogin ? (
             <div className="rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
-              Entre com sua conta real para visualizar o financeiro.
+              Entre na sua conta para consultar o financeiro da oficina.
             </div>
           ) : null}
 
@@ -438,9 +438,9 @@ export default function FinanceiroPage() {
                   onChange={(event) => setPeriodFilter(event.target.value)}
                   value={periodFilter}
                 >
-                  <option value="mes_atual">Este mes</option>
+                  <option value="mes_atual">Este mês</option>
                   <option value="mes_anterior">Mês anterior</option>
-                  <option value="ultimos_3_meses">Ultimos 3 meses</option>
+                  <option value="ultimos_3_meses">Últimos 3 meses</option>
                   <option value="ano_atual">Este ano</option>
                   <option value="todos">Todo o período</option>
                   <option value="personalizado">Personalizado</option>
@@ -546,12 +546,12 @@ export default function FinanceiroPage() {
           <section className="mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
             <h2 className="text-xl font-black">Repasses previstos aos mecânicos</h2>
             <p className="mt-1 text-sm text-slate-500">
-              50% da mão de obra das ordens filtradas, conforme a porcentagem informada para cada responsável. Ordens canceladas e peças ficam fora do cálculo. Estes valores não confirmam pagamento.
+              Comissão definida pelo gerente em cada ordem, conforme a divisão entre os responsáveis. Ordens canceladas e peças ficam fora do cálculo. Estes valores não confirmam pagamento.
             </p>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {mecanicos.map((mecanico) => {
                 const total = filteredOrdens.filter((ordem) => ordem.status !== 'cancelada')
-                  .reduce((sum, ordem) => sum + (calcularRepasses(Number(ordem.valor_servico), ordem.mecanico_ids, ordem.mecanico_divisao)
+                  .reduce((sum, ordem) => sum + (calcularRepasses(Number(ordem.valor_servico), ordem.mecanico_ids, ordem.mecanico_divisao, ordem.comissao_percentual)
                     .find((repasse) => repasse.mecanicoId === mecanico.id)?.valor ?? 0), 0)
                 return <div className="rounded-xl bg-slate-50 p-4" key={mecanico.id}>
                   <strong className="block text-sm">{mecanico.nome}</strong>
@@ -565,9 +565,9 @@ export default function FinanceiroPage() {
           <section className="mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h2 className="text-xl font-black">Resumo por mes</h2>
+                <h2 className="text-xl font-black">Resumo por mês</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Recebido, em aberto e previsto agrupados pelo mes da ordem.
+                  Recebido, em aberto e previsto agrupados pelo mês de abertura da ordem.
                 </p>
               </div>
               <strong className="text-sm font-black text-slate-700">

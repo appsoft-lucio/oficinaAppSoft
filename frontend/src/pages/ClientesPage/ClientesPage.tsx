@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
 import DashboardTopbar from '../../components/dashboard/DashboardTopbar'
 import { supabase } from '../../lib/supabase'
@@ -15,7 +16,7 @@ export default function ClientesPage() {
   const [oficina, setOficina] = useState<Oficina | null>(null)
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [telefone, setTelefone] = useState('')
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
+  const oficinaName = oficina?.nome ?? 'Minha Oficina'
 
   useEffect(() => {
     async function loadClientes() {
@@ -27,7 +28,7 @@ export default function ClientesPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstração',
+        fallbackName: 'Minha Oficina',
         userId: data.user.id,
       })
 
@@ -45,7 +46,7 @@ export default function ClientesPage() {
     setMessage('')
 
     if (!oficina) {
-      setMessage('Entre com uma conta real para cadastrar clientes. O acesso demo não salva dados.')
+      setMessage('Entre na sua conta para cadastrar clientes.')
       return
     }
 
@@ -111,8 +112,7 @@ export default function ClientesPage() {
 
             {requiresRealLogin ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
-                Entre com sua conta real para salvar clientes no Supabase. O acesso demo é apenas
-                para apresentação visual.
+                Entre na sua conta para cadastrar e consultar clientes da oficina.
               </div>
             ) : null}
 
@@ -170,7 +170,7 @@ export default function ClientesPage() {
               <div>
                 <h2 className="text-xl font-black">Clientes cadastrados</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Dados carregados direto do Supabase.
+                  Consulte os dados de contato e o histórico de cada cliente.
                 </p>
               </div>
             </div>
@@ -189,6 +189,7 @@ export default function ClientesPage() {
                       <span>{cliente.telefone || 'Telefone não informado'}</span>
                       <span>{cliente.email || 'E-mail não informado'}</span>
                     </div>
+                    <Link className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 text-sm font-bold" to={`/historico/clientes/${cliente.id}`}>Ver histórico</Link>
                   </article>
                 ))
               ) : (

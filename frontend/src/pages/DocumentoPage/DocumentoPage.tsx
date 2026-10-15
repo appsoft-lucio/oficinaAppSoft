@@ -89,7 +89,7 @@ export default function DocumentoPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstração',
+        fallbackName: 'Minha Oficina',
         userId: data.user.id,
       })
 
@@ -164,7 +164,7 @@ export default function DocumentoPage() {
               Oficina
             </p>
             <strong className="mt-2 block text-xl font-black">
-              {oficina?.nome ?? 'Oficina Demonstração'}
+              {oficina?.nome ?? 'Minha Oficina'}
             </strong>
             {isNotaSimples ? (
               <p className="mt-3 max-w-64 text-xs font-bold leading-5 text-slate-300">

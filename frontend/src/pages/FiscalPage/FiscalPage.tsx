@@ -41,7 +41,7 @@ export default function FiscalPage() {
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [statusFilter, setStatusFilter] = useState('todos')
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
+  const oficinaName = oficina?.nome ?? 'Minha Oficina'
 
   const clientesById = useMemo(() => {
     return clientes.reduce<Record<string, Cliente>>((acc, cliente) => {
@@ -80,7 +80,7 @@ export default function FiscalPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstração',
+        fallbackName: 'Minha Oficina',
         userId: data.user.id,
       })
 

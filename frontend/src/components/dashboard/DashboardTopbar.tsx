@@ -11,9 +11,9 @@ type DashboardTopbarProps = {
 
 export default function DashboardTopbar({
   children,
-  eyebrow = 'Painel logado',
+  eyebrow = 'Sua oficina',
   onOpenMenu,
-  title = 'Dashboard da oficina',
+  title = 'Painel da oficina',
 }: DashboardTopbarProps) {
   const navigate = useNavigate()
 

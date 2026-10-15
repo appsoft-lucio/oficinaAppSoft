@@ -16,6 +16,7 @@ export type OrdemServico = {
   valor_pago: number
   mecanico_ids: string[]
   mecanico_divisao: Record<string, number>
+  comissao_percentual: number
   created_at: string
 }
 
@@ -45,6 +46,7 @@ type CreateOrdemParams = {
   valor?: string
   mecanicoIds?: string[]
   mecanicoDivisao?: Record<string, number>
+  comissaoPercentual: number
 }
 
 type UpdateOrdemStatusParams = {
@@ -65,7 +67,7 @@ type UpdateOrdemNotaParams = {
 }
 
 const ordemSelect =
-  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, nota_status, nota_numero, nota_emitida_em, valor, valor_servico, valor_pago, mecanico_ids, mecanico_divisao, created_at'
+  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, nota_status, nota_numero, nota_emitida_em, valor, valor_servico, valor_pago, mecanico_ids, mecanico_divisao, comissao_percentual, created_at'
 
 function parseMoney(value?: string) {
   if (!value) {
@@ -129,7 +131,11 @@ export async function createOrdem({
   veiculoId,
   mecanicoIds = [],
   mecanicoDivisao = {},
+  comissaoPercentual,
 }: CreateOrdemParams) {
+  if (!Number.isInteger(comissaoPercentual) || comissaoPercentual < 1 || comissaoPercentual > 100) {
+    throw new Error('Informe a comissão entre 1% e 100%.')
+  }
   const valorServico = parseMoney(valor)
   const parsedPecas = pecas
     .filter((peca) => peca.descricao.trim())
@@ -160,6 +166,7 @@ export async function createOrdem({
       veiculo_id: veiculoId,
       mecanico_ids: [...new Set(mecanicoIds)].sort(),
       mecanico_divisao: mecanicoDivisao,
+      comissao_percentual: comissaoPercentual,
     })
     .select(ordemSelect)
     .single()

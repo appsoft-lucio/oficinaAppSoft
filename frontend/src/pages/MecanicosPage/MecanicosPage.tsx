@@ -18,7 +18,7 @@ export default function MecanicosPage() {
   const [oficina, setOficina] = useState<Oficina | null>(null)
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [telefone, setTelefone] = useState('')
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
+  const oficinaName = oficina?.nome ?? 'Minha Oficina'
 
   useEffect(() => {
     async function loadMecanicos() {
@@ -30,7 +30,7 @@ export default function MecanicosPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstração',
+        fallbackName: 'Minha Oficina',
         userId: data.user.id,
       })
 
@@ -50,7 +50,7 @@ export default function MecanicosPage() {
     setMessage('')
 
     if (!oficina) {
-      setMessage('Entre com uma conta real para cadastrar mecânicos. O acesso demo não salva dados.')
+      setMessage('Entre na sua conta para cadastrar mecânicos.')
       return
     }
 
@@ -120,8 +120,7 @@ export default function MecanicosPage() {
               <p role="alert" className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">{loadError}</p>
             ) : requiresRealLogin ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
-                Entre com sua conta real para salvar mecânicos no Supabase. O acesso demo é apenas
-                para apresentação visual.
+                Entre na sua conta para cadastrar e consultar mecânicos da oficina.
               </div>
             ) : null}
 
@@ -179,7 +178,7 @@ export default function MecanicosPage() {
               <div>
                 <h2 className="text-xl font-black">Mecânicos cadastrados</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Dados carregados direto do Supabase.
+                  Profissionais cadastrados para executar os serviços da oficina.
                 </p>
               </div>
             </div>

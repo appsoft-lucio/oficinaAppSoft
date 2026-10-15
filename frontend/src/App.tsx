@@ -10,6 +10,7 @@ import FinanceiroPage from './pages/FinanceiroPage/FinanceiroPage'
 import FiscalPage from './pages/FiscalPage/FiscalPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage'
 import HomePage from './pages/HomePage/HomePage'
+import HistoricoPage from './pages/HistoricoPage/HistoricoPage'
 import LoginPage from './pages/LoginPage/LoginPage'
 import OrdensPage from './pages/OrdensPage/OrdensPage'
 import RegisterPage from './pages/RegisterPage/RegisterPage'
@@ -20,6 +21,7 @@ import VeiculosPage from './pages/VeiculosPage/VeiculosPage'
 function App() {
   return (
     <Routes>
+      <Route path="/historico/:tipo/:id" element={<ProtectedRoute><HistoricoPage /></ProtectedRoute>} />
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route

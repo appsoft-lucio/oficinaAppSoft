@@ -9,6 +9,14 @@ type OrdersPanelProps = {
   veiculos: Veiculo[]
 }
 
+const statusLabels: Record<string, string> = {
+  aberta: 'Aberta',
+  em_andamento: 'Em andamento',
+  aguardando_peca: 'Aguardando peça',
+  concluida: 'Concluída',
+  cancelada: 'Cancelada',
+}
+
 export default function OrdersPanel({ clientes, ordens, veiculos }: OrdersPanelProps) {
   const clientesById = clientes.reduce<Record<string, Cliente>>((acc, cliente) => {
     acc[cliente.id] = cliente
@@ -25,7 +33,7 @@ export default function OrdersPanel({ clientes, ordens, veiculos }: OrdersPanelP
       <div className="flex items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-black text-slate-950">Ordens recentes</h2>
-          <p className="mt-1 text-sm text-slate-500">Serviços cadastrados no Supabase.</p>
+          <p className="mt-1 text-sm text-slate-500">Acompanhe as últimas ordens de serviço da oficina.</p>
         </div>
         <Link
           className="hidden rounded-lg bg-slate-950 px-4 py-2 text-sm font-black text-white sm:block"
@@ -52,7 +60,7 @@ export default function OrdersPanel({ clientes, ordens, veiculos }: OrdersPanelP
               </div>
               <div>
                 <span className="block text-sm font-bold text-slate-700">{ordem.titulo}</span>
-                <span className="text-sm font-black text-orange-600">{ordem.status}</span>
+                <span className="text-sm font-black text-orange-600">{statusLabels[ordem.status] ?? ordem.status}</span>
               </div>
               <strong className="text-left text-lg font-black text-slate-950 md:text-right">
                 {Number(ordem.valor).toLocaleString('pt-BR', {
@@ -64,7 +72,7 @@ export default function OrdersPanel({ clientes, ordens, veiculos }: OrdersPanelP
           ))
         ) : (
           <p className="rounded-lg bg-slate-50 p-4 text-sm font-bold text-slate-500">
-            Nenhuma ordem cadastrada ainda.
+            Nenhuma ordem cadastrada. Clique em Nova ordem para registrar o primeiro serviço.
           </p>
         )}
       </div>

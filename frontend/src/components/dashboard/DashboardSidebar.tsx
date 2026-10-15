@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabase'
 import InstallAppButton from '../pwa/InstallAppButton'
 
 const menuItems = [
-  { label: 'Dashboard', to: '/dashboard' },
+  { label: 'Visão geral', to: '/dashboard' },
   { label: 'Ordens', to: '/ordens' },
   { label: 'Clientes', to: '/clientes' },
   { label: 'Veículos', to: '/veiculos' },
@@ -36,7 +36,7 @@ export default function DashboardSidebar({ oficinaName }: DashboardSidebarProps)
           Oficina
         </p>
         <strong className="mt-1 block text-lg font-black">{oficinaName}</strong>
-        <span className="text-sm text-slate-400">Plano inicial</span>
+        <span className="text-sm text-slate-400">Gestão da oficina</span>
       </div>
 
       <nav className="mt-8 grid gap-2">

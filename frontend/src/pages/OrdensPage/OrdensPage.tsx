@@ -97,6 +97,7 @@ export default function OrdensPage() {
   const [mecanicos, setMecanicos] = useState<Mecanico[]>([])
   const [mecanicoIds, setMecanicoIds] = useState<string[]>([])
   const [mecanicoDivisao, setMecanicoDivisao] = useState<Record<string, number>>({})
+  const [comissaoPercentual, setComissaoPercentual] = useState('')
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [descricao, setDescricao] = useState('')
   const [editingPecaIndex, setEditingPecaIndex] = useState<number | null>(null)
@@ -116,7 +117,7 @@ export default function OrdensPage() {
   const [veiculoId, setVeiculoId] = useState('')
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
+  const oficinaName = oficina?.nome ?? 'Minha Oficina'
 
   const clientesById = useMemo(() => {
     return clientes.reduce<Record<string, Cliente>>((acc, cliente) => {
@@ -154,7 +155,7 @@ export default function OrdensPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstração',
+        fallbackName: 'Minha Oficina',
         userId: data.user.id,
       })
 
@@ -252,7 +253,7 @@ export default function OrdensPage() {
     setMessage('')
 
     if (!oficina) {
-      setMessage('Entre com uma conta real para cadastrar ordens. O acesso demo não salva dados.')
+      setMessage('Entre na sua conta para cadastrar ordens.')
       return
     }
 
@@ -266,7 +267,12 @@ export default function OrdensPage() {
       return
     }
 
-    if (calcularRepasses(parseMoney(valor), mecanicoIds, mecanicoDivisao).length !== mecanicoIds.length) {
+    if (!Number.isInteger(Number(comissaoPercentual)) || Number(comissaoPercentual) < 1 || Number(comissaoPercentual) > 100) {
+      setMessage('Informe a comissão dos mecânicos entre 1% e 100%.')
+      return
+    }
+
+    if (calcularRepasses(parseMoney(valor), mecanicoIds, mecanicoDivisao, Number(comissaoPercentual)).length !== mecanicoIds.length) {
       setMessage('A divis\u00e3o do repasse deve somar 100%, com percentuais inteiros de 1 a 100.')
       return
     }
@@ -285,6 +291,7 @@ export default function OrdensPage() {
         veiculoId,
         mecanicoIds,
         mecanicoDivisao,
+        comissaoPercentual: Number(comissaoPercentual),
       })
 
       setOrdens((currentOrdens) => [createdOrdem, ...currentOrdens])
@@ -297,6 +304,7 @@ export default function OrdensPage() {
       setValor('')
       setMecanicoIds([])
       setMecanicoDivisao({})
+      setComissaoPercentual('')
       setMessage('Ordem cadastrada com sucesso.')
     } catch {
       setMessage('Não foi possível cadastrar a ordem.')
@@ -410,8 +418,7 @@ export default function OrdensPage() {
 
             {requiresRealLogin ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
-                Entre com sua conta real para salvar ordens no Supabase. O acesso demo é apenas
-                para apresentação visual.
+                Entre na sua conta para cadastrar e consultar ordens da oficina.
               </div>
             ) : clientes.length === 0 || veiculos.length === 0 ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
@@ -676,8 +683,14 @@ export default function OrdensPage() {
                 <fieldset className="rounded-xl border border-slate-200 p-4">
                   <legend className="px-1 text-sm font-black text-slate-700">Mecânicos responsáveis</legend>
                   <p className="mb-3 text-sm text-slate-500">
-                    Informe a porcentagem de cada profissional sobre os 50% da mão de obra. A soma deve ser 100%. Peças ficam fora.
+                    O gerente define a comissão sobre a mão de obra, de 1% a 100%. Peças ficam fora. A divisão da comissão entre os responsáveis deve somar 100%.
                   </p>
+                  <label className="mb-4 block text-sm font-bold">
+                    Comissão dos mecânicos (% da mão de obra)
+                    <input className="mt-1 h-10 w-full rounded-lg border border-slate-300 px-3"
+                      type="number" min={1} max={100} step={1} required placeholder="De 1 a 100"
+                      value={comissaoPercentual} onChange={(event) => setComissaoPercentual(event.target.value)} />
+                  </label>
                   {mecanicos.length === 0 ? (
                     <Link className="text-sm font-bold text-orange-700 underline" to="/mecanicos">Cadastre um mecânico para continuar</Link>
                   ) : mecanicos.map((mecanico) => (
@@ -705,7 +718,7 @@ export default function OrdensPage() {
                         onChange={(event) => setMecanicoDivisao((current) => ({ ...current, [id]: Number(event.target.value) }))} />
                     </label>
                   ))}
-                  {calcularRepasses(parseMoney(valor), mecanicoIds, mecanicoDivisao).map((repasse) => (
+                  {calcularRepasses(parseMoney(valor), mecanicoIds, mecanicoDivisao, Number(comissaoPercentual)).map((repasse) => (
                     <p className="mt-2 text-sm text-slate-600" key={repasse.mecanicoId}>
                       {mecanicos.find((mecanico) => mecanico.id === repasse.mecanicoId)?.nome}: {repasse.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                     </p>
@@ -732,7 +745,7 @@ export default function OrdensPage() {
           <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
             <h2 className="text-xl font-black">Ordens cadastradas</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Histórico inicial de serviços da oficina.
+              Consulte os serviços e acompanhe o andamento de cada ordem.
             </p>
 
             {statusMessage ? (
@@ -793,7 +806,8 @@ export default function OrdensPage() {
                       </div>
                     </div>
                     <div className="mt-3 text-sm text-slate-600">
-                      {calcularRepasses(Number(ordem.valor_servico), ordem.mecanico_ids, ordem.mecanico_divisao).map((repasse) => (
+                      <p>Comissão dos mecânicos: {ordem.comissao_percentual}% da mão de obra</p>
+                      {calcularRepasses(Number(ordem.valor_servico), ordem.mecanico_ids, ordem.mecanico_divisao, ordem.comissao_percentual).map((repasse) => (
                         <p key={repasse.mecanicoId}>
                           {mecanicos.find((mecanico) => mecanico.id === repasse.mecanicoId)?.nome ?? 'Mecânico'}: repasse previsto {repasse.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </p>

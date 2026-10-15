@@ -1,8 +1,9 @@
-// Work in cents so the allocated shares always add up to exactly 50%.
-export function calcularRepasses(valorServico: number, mecanicoIds: string[], divisao: Record<string, number>) {
+// Work in cents so the shares add up to the commission chosen for this order.
+export function calcularRepasses(valorServico: number, mecanicoIds: string[], divisao: Record<string, number>, comissaoPercentual: number) {
   const ids = [...new Set(mecanicoIds)].sort()
   if (!ids.length || !Number.isFinite(valorServico) || valorServico < 0) return []
-  const totalCentavos = Math.round(Math.round(valorServico * 100) / 2)
+  if (!Number.isInteger(comissaoPercentual) || comissaoPercentual < 1 || comissaoPercentual > 100) return []
+  const totalCentavos = Math.round(Math.round(valorServico * 100) * comissaoPercentual / 100)
   if (ids.some((id) => !Number.isInteger(divisao[id]) || divisao[id] <= 0 || divisao[id] > 100)
     || ids.reduce((sum, id) => sum + divisao[id], 0) !== 100) return []
   const cotas = ids.map((id) => totalCentavos * divisao[id] / 100)

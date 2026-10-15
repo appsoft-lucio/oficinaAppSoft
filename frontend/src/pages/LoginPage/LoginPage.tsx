@@ -32,7 +32,7 @@ export default function LoginPage() {
       setIsSubmitting(false)
       if (error.code === 'email_not_confirmed') {
         setMessage(
-          'Este cadastro ainda aguarda confirmação. Exclua a conta pendente e cadastre novamente, ou confirme o e-mail no Supabase.',
+          'Confirme seu e-mail para acessar o sistema. Confira sua caixa de entrada e a pasta de spam. Se precisar de ajuda, entre em contato com a Oficina AppSoft.',
         )
         return
       }
@@ -78,7 +78,7 @@ export default function LoginPage() {
         }
       } catch {
         setIsSubmitting(false)
-        setMessage('Login feito, mas não foi possível preparar a oficina.')
+        setMessage('Não foi possível carregar sua oficina. Tente entrar novamente.')
         return
       }
     }

@@ -7,6 +7,9 @@ import { listClientes, type Cliente } from '../../services/clientes'
 import { ensureUserOficina, type Oficina } from '../../services/oficinas'
 import { createVeiculo, listVeiculos, type Veiculo } from '../../services/veiculos'
 import { databaseErrorMessage } from '../../services/databaseErrors'
+import TransferenciaDialog from '../../components/dashboard/TransferenciaDialog'
+import { buscarVeiculoDuplicado, normalizarPlaca, prepararTransferencia, transferirVeiculo, transferErrorMessage } from '../../services/vehicleHistory'
+import type { OrdemServico } from '../../services/ordens'
 
 export default function VeiculosPage() {
   const [ano, setAno] = useState('')
@@ -24,7 +27,9 @@ export default function VeiculosPage() {
   const [quilometragem, setQuilometragem] = useState('')
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
-  const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
+  const [transferencia, setTransferencia] = useState<{ veiculo: Veiculo; clienteId: string; pendentes: OrdemServico[] } | null>(null)
+  const [transferError, setTransferError] = useState('')
+  const oficinaName = oficina?.nome ?? 'Minha Oficina'
 
   const clientesById = useMemo(() => {
     return clientes.reduce<Record<string, Cliente>>((acc, cliente) => {
@@ -43,7 +48,7 @@ export default function VeiculosPage() {
       }
 
       const preparedOficina = await ensureUserOficina({
-        fallbackName: 'Oficina Demonstração',
+        fallbackName: 'Minha Oficina',
         userId: data.user.id,
       })
 
@@ -73,7 +78,7 @@ export default function VeiculosPage() {
     setMessage('')
 
     if (!oficina) {
-      setMessage('Entre com uma conta real para cadastrar veículos. O acesso demo não salva dados.')
+      setMessage('Entre na sua conta para cadastrar veículos.')
       return
     }
 
@@ -85,13 +90,24 @@ export default function VeiculosPage() {
     setIsSubmitting(true)
 
     try {
+      const duplicado = await buscarVeiculoDuplicado(oficina.id, placa)
+      if (duplicado) {
+        if (duplicado.cliente_id === clienteId) {
+          setMessage('Este veículo já está cadastrado para este cliente. Consulte o histórico na listagem.')
+          return
+        }
+        const pendentes = await prepararTransferencia(oficina.id, duplicado)
+        setTransferError('')
+        setTransferencia({ veiculo: duplicado, clienteId, pendentes })
+        return
+      }
       const createdVeiculo = await createVeiculo({
         ano,
         clienteId,
         marca,
         modelo,
         oficinaId: oficina.id,
-        placa,
+        placa: normalizarPlaca(placa),
         quilometragem: Number(quilometragem),
       })
 
@@ -103,14 +119,47 @@ export default function VeiculosPage() {
       setQuilometragem('')
       setMessage('Veículo cadastrado com sucesso.')
     } catch (error) {
-      setMessage(databaseErrorMessage(error, 'Não foi possível cadastrar o veículo.'))
+      setMessage(databaseErrorMessage(error, transferErrorMessage(error)))
     } finally {
       setIsSubmitting(false)
     }
   }
 
+  async function handlePrepareTransfer(veiculo: Veiculo, novoClienteId: string) {
+    if (!oficina || !novoClienteId || isSubmitting) return
+    setIsSubmitting(true)
+    setMessage('')
+    try {
+      const pendentes = await prepararTransferencia(oficina.id, veiculo)
+      setTransferError('')
+      setTransferencia({ veiculo, clienteId: novoClienteId, pendentes })
+    } catch (error) {
+      setMessage(databaseErrorMessage(error, transferErrorMessage(error)))
+    } finally { setIsSubmitting(false) }
+  }
+
+  async function handleConfirmTransfer() {
+    if (!transferencia || isSubmitting) return
+    setIsSubmitting(true)
+    try {
+      const atualizado = await transferirVeiculo(transferencia.veiculo, transferencia.clienteId, transferencia.pendentes)
+      setVeiculos((current) => [atualizado, ...current.filter((veiculo) => veiculo.id !== atualizado.id)])
+      setTransferencia(null)
+      setAno(''); setMarca(''); setModelo(''); setPlaca(''); setQuilometragem('')
+      setMessage('Proprietário transferido. O histórico e as ordens anteriores foram preservados.')
+    } catch (error) {
+      setTransferError(databaseErrorMessage(error, `${transferErrorMessage(error)} Feche esta janela e tente novamente para revisar os dados atuais.`))
+    } finally { setIsSubmitting(false) }
+  }
+
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950 lg:grid lg:grid-cols-[280px_1fr]">
+      {transferencia ? <TransferenciaDialog
+        veiculo={transferencia.veiculo}
+        anterior={clientesById[transferencia.veiculo.cliente_id ?? '']?.nome ?? 'Não informado'}
+        novo={clientesById[transferencia.clienteId]?.nome ?? 'Não informado'}
+        pendentes={transferencia.pendentes} busy={isSubmitting} error={transferError}
+        onCancel={() => setTransferencia(null)} onConfirm={handleConfirmTransfer} /> : null}
       {isMenuOpen ? (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
@@ -153,8 +202,7 @@ export default function VeiculosPage() {
               <p role="alert" className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">{loadError}</p>
             ) : requiresRealLogin ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
-                Entre com sua conta real para salvar veículos no Supabase. O acesso demo é apenas
-                para apresentação visual.
+                Entre na sua conta para cadastrar e consultar veículos da oficina.
               </div>
             ) : clientes.length === 0 ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
@@ -223,6 +271,7 @@ export default function VeiculosPage() {
                     placeholder="ABC1D23"
                     value={placa}
                   />
+                  <span className="mt-1 block text-xs text-slate-500">A placa identifica veículos já cadastrados. Sem placa, não é possível detectar duplicidade automaticamente.</span>
                 </label>
 
                 <label className="block">
@@ -266,6 +315,8 @@ export default function VeiculosPage() {
               </p>
             </div>
 
+            {message ? <p role="status" className="mt-4 rounded-lg bg-orange-50 p-3 text-sm font-bold text-orange-700">{message}</p> : null}
+
             <div className="mt-5 grid gap-3">
               {isLoading || loadError ? (
                 <p className="text-sm text-slate-500">{isLoading ? 'Carregando veículos...' : 'A listagem está indisponível até resolver o erro de carregamento.'}</p>
@@ -297,6 +348,18 @@ export default function VeiculosPage() {
                           : `${veiculo.quilometragem.toLocaleString('pt-BR')} km`}
                       </span>
                     </div>
+                    <Link className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 text-sm font-bold" to={`/historico/veiculos/${veiculo.id}`}>Ver histórico</Link>
+                    <form className="mt-3 flex flex-wrap gap-2" onSubmit={(event) => {
+                      event.preventDefault()
+                      const novoClienteId = String(new FormData(event.currentTarget).get('novoClienteId') ?? '')
+                      void handlePrepareTransfer(veiculo, novoClienteId)
+                    }}>
+                      <select aria-label={`Novo proprietário de ${veiculo.modelo} ${veiculo.placa ?? ''}`} name="novoClienteId" required defaultValue="" className="min-h-10 min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 text-sm">
+                        <option value="" disabled>Selecionar novo proprietário</option>
+                        {clientes.filter((cliente) => cliente.id !== veiculo.cliente_id).map((cliente) => <option key={cliente.id} value={cliente.id}>{cliente.nome}</option>)}
+                      </select>
+                      <button type="submit" disabled={isSubmitting} className="min-h-10 rounded-lg bg-slate-950 px-3 text-sm font-bold text-white disabled:opacity-50">Transferir</button>
+                    </form>
                   </article>
                 ))
               ) : (

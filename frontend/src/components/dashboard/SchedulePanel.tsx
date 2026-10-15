@@ -23,7 +23,7 @@ export default function SchedulePanel({ ordens }: SchedulePanelProps) {
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-200">
       <h2 className="text-xl font-black text-slate-950">Status das ordens</h2>
-      <p className="mt-1 text-sm text-slate-500">Resumo operacional atual.</p>
+      <p className="mt-1 text-sm text-slate-500">Veja em que etapa está cada serviço.</p>
 
       <div className="mt-5 space-y-4">
         {statusSummary.length > 0 ? (
@@ -42,7 +42,7 @@ export default function SchedulePanel({ ordens }: SchedulePanelProps) {
           ))
         ) : (
           <p className="rounded-lg bg-slate-50 p-4 text-sm font-bold text-slate-500">
-            Nenhuma ordem para resumir.
+            Os serviços aparecerão aqui conforme forem cadastrados.
           </p>
         )}
       </div>
