@@ -1,3 +1,4 @@
+import RegistroAutoria from '../../components/dashboard/RegistroAutoria'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
@@ -816,6 +817,7 @@ export default function OrdensPage() {
                         <strong className="block text-base font-black text-slate-950">
                           {ordem.titulo}
                         </strong>
+                    <RegistroAutoria registro={ordem} />
                         <span className="mt-1 block text-sm text-slate-500">
                           {clientesById[ordem.cliente_id ?? '']?.nome ?? 'Cliente não informado'}
                         </span>

@@ -1,3 +1,4 @@
+import RegistroAutoria from './RegistroAutoria'
 import { Link } from 'react-router-dom'
 import type { Cliente } from '../../services/clientes'
 import type { OrdemServico } from '../../services/ordens'
@@ -60,6 +61,7 @@ export default function OrdersPanel({ clientes, ordens, veiculos }: OrdersPanelP
               </div>
               <div>
                 <span className="block text-sm font-bold text-slate-700">{ordem.titulo}</span>
+                <RegistroAutoria registro={ordem} />
                 <span className="text-sm font-black text-orange-600">{statusLabels[ordem.status] ?? ordem.status}</span>
               </div>
               <strong className="text-left text-lg font-black text-slate-950 md:text-right">

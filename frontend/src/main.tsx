@@ -22,6 +22,18 @@ if ('serviceWorker' in navigator) {
     }
   })
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).catch(() => undefined)
+    if (import.meta.env.DEV) {
+      // A previous production worker must not serve old pages during local development.
+      navigator.serviceWorker.getRegistration('/').then((registration) => registration?.unregister()).catch(() => undefined)
+      return
+    }
+    navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then((registration) => {
+      const checkForUpdate = () => { registration.update().catch(() => undefined) }
+      window.addEventListener('online', checkForUpdate)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') checkForUpdate()
+      })
+      checkForUpdate()
+    }).catch(() => undefined)
   })
 }

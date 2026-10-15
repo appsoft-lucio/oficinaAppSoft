@@ -1,3 +1,4 @@
+import RegistroAutoria from '../../components/dashboard/RegistroAutoria'
 import CadastroEditDialog from '../../components/dashboard/CadastroEditDialog'
 import { useEffect, useState } from 'react'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
@@ -202,6 +203,7 @@ export default function MecanicosPage() {
                     <strong className="block text-base font-black text-slate-950">
                       {mecanico.nome}
                     </strong>
+                    <RegistroAutoria registro={mecanico} />
                     <div className="mt-2 grid gap-1 text-sm text-slate-500">
                       <span>{mecanico.telefone || 'Telefone não informado'}</span>
                       <span>{mecanico.email || 'E-mail não informado'}</span>

@@ -1,3 +1,4 @@
+import RegistroAutoria from '../../components/dashboard/RegistroAutoria'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
@@ -108,6 +109,7 @@ export default function HistoricoPage() {
                   {!isVeiculo ? <Link className="text-orange-700 underline" to={`/historico/veiculos/${evento.veiculo_id}`}>{veiculoNome(evento.veiculo_id)}</Link> : null}
                   <p className="mt-1">{evento.tipo === 'transferencia' ? `${evento.nome_anterior || 'Não informado'} → ` : ''}{evento.nome_novo || 'Não informado'}</p>
                   <time className="mt-1 block text-slate-500" dateTime={evento.created_at}>{date(evento.created_at)}</time>
+                  <RegistroAutoria registro={evento} />
                 </article>)}
                 {data.eventos.length === 0 ? <p className="text-sm text-slate-500">Nenhum registro de propriedade.</p> : null}
               </div>
@@ -118,6 +120,7 @@ export default function HistoricoPage() {
               <div className="mt-4 space-y-3">
                 {data.ordens.map((ordem) => <article key={ordem.id} className="rounded-xl border border-slate-200 p-4 text-sm">
                   <h3 className="text-base font-black">{ordem.titulo}</h3>
+                    <RegistroAutoria registro={ordem} />
                   <time className="mt-1 block text-slate-500" dateTime={ordem.created_at}>{date(ordem.created_at)}</time>
                   <p className="mt-2">Cliente da ordem: <strong>{clienteNome(ordem.cliente_id)}</strong></p>
                   <p>Veículo: <Link className="text-orange-700 underline" to={`/historico/veiculos/${ordem.veiculo_id}`}>{veiculoNome(ordem.veiculo_id)}</Link></p>

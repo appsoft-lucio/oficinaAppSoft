@@ -1,3 +1,4 @@
+import type { AutoriaRegistro } from './equipe'
 import { supabase } from '../lib/supabase'
 import { listOrdens, type OrdemServico } from './ordens'
 import { listVeiculos, type Veiculo } from './veiculos'
@@ -11,7 +12,7 @@ export function ordensPendentes(ordens: OrdemServico[], veiculoId: string) {
     && (ordem.status !== 'concluida' || ordem.pagamento_status !== 'pago'))
 }
 
-export type ProprietarioEvento = {
+export type ProprietarioEvento = AutoriaRegistro & {
   id: string
   veiculo_id: string
   cliente_anterior_id: string | null
@@ -50,7 +51,7 @@ export async function transferirVeiculo(veiculo: Veiculo, clienteId: string, pen
 
 export async function listProprietarios(oficinaId: string) {
   const { data, error } = await supabase.from('veiculo_proprietarios')
-    .select('id, veiculo_id, cliente_anterior_id, cliente_novo_id, nome_anterior, nome_novo, tipo, created_at')
+    .select('id, veiculo_id, cliente_anterior_id, cliente_novo_id, nome_anterior, nome_novo, tipo, created_at, criado_por, alterado_por, alterado_em')
     .eq('oficina_id', oficinaId).order('created_at', { ascending: false })
   if (error) throw error
   return data as ProprietarioEvento[]

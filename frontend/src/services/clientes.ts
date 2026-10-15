@@ -1,6 +1,7 @@
+import type { AutoriaRegistro } from './equipe'
 import { supabase } from '../lib/supabase'
 
-export type Cliente = {
+export type Cliente = AutoriaRegistro & {
   id: string
   nome: string
   telefone: string | null
@@ -18,7 +19,7 @@ type CreateClienteParams = {
 export async function listClientes(oficinaId: string) {
   const { data, error } = await supabase
     .from('clientes')
-    .select('id, nome, telefone, email, created_at')
+    .select('id, nome, telefone, email, created_at, criado_por, alterado_por, alterado_em')
     .eq('oficina_id', oficinaId)
     .order('created_at', { ascending: false })
 
@@ -43,7 +44,7 @@ export async function createCliente({
       oficina_id: oficinaId,
       telefone: telefone || null,
     })
-    .select('id, nome, telefone, email, created_at')
+    .select('id, nome, telefone, email, created_at, criado_por, alterado_por, alterado_em')
     .single()
 
   if (error) {
@@ -58,7 +59,7 @@ export async function updateCliente({ id, oficinaId, nome, telefone, email }: Cr
   const { data, error } = await supabase.from('clientes')
     .update({ nome: nome.trim(), telefone: telefone?.trim() || null, email: email?.trim() || null })
     .eq('id', id).eq('oficina_id', oficinaId)
-    .select('id, nome, telefone, email, created_at').single()
+    .select('id, nome, telefone, email, created_at, criado_por, alterado_por, alterado_em').single()
   if (error) throw error
   return data
 }

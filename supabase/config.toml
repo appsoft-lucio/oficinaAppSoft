@@ -414,3 +414,6 @@ enabled = true
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
 [functions.username-login]
 verify_jwt = false
+
+[functions.workshop-users]
+verify_jwt = false

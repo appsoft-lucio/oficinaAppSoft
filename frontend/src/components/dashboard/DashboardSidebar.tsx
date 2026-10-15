@@ -11,6 +11,7 @@ const menuItems = [
   { label: 'Mecânicos', to: '/mecanicos' },
   { label: 'Financeiro', to: '/financeiro' },
   { label: 'Fiscal', to: '/fiscal' },
+  { label: 'Equipe e atividades', to: '/equipe' },
 ]
 
 type DashboardSidebarProps = {

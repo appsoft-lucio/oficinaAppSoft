@@ -1,6 +1,7 @@
+import type { AutoriaRegistro } from './equipe'
 import { supabase } from '../lib/supabase'
 
-export type Veiculo = {
+export type Veiculo = AutoriaRegistro & {
   id: string
   cliente_id: string | null
   placa: string | null
@@ -24,7 +25,7 @@ type CreateVeiculoParams = {
 export async function listVeiculos(oficinaId: string) {
   const { data, error } = await supabase
     .from('veiculos')
-    .select('id, cliente_id, placa, marca, modelo, ano, quilometragem, created_at')
+    .select('id, cliente_id, placa, marca, modelo, ano, quilometragem, created_at, criado_por, alterado_por, alterado_em')
     .eq('oficina_id', oficinaId)
     .order('created_at', { ascending: false })
 
@@ -48,7 +49,7 @@ export async function updateVeiculo({ id, oficinaId, modelo, marca, placa, ano, 
     modelo: modelo.trim(), marca: marca?.trim() || null, placa: placa?.trim() || null,
     ano: parsedAno, quilometragem,
   }).eq('id', id).eq('oficina_id', oficinaId)
-    .select('id, cliente_id, placa, marca, modelo, ano, quilometragem, created_at').single()
+    .select('id, cliente_id, placa, marca, modelo, ano, quilometragem, created_at, criado_por, alterado_por, alterado_em').single()
   if (error) throw error
   return data
 }
@@ -79,7 +80,7 @@ export async function createVeiculo({
       placa: placa || null,
       quilometragem,
     })
-    .select('id, cliente_id, placa, marca, modelo, ano, quilometragem, created_at')
+    .select('id, cliente_id, placa, marca, modelo, ano, quilometragem, created_at, criado_por, alterado_por, alterado_em')
     .single()
 
   if (error) {

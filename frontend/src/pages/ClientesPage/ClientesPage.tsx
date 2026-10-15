@@ -1,3 +1,4 @@
+import RegistroAutoria from '../../components/dashboard/RegistroAutoria'
 import CadastroEditDialog from '../../components/dashboard/CadastroEditDialog'
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -192,6 +193,7 @@ export default function ClientesPage() {
                     <strong className="block text-base font-black text-slate-950">
                       {cliente.nome}
                     </strong>
+                    <RegistroAutoria registro={cliente} />
                     <div className="mt-2 grid gap-1 text-sm text-slate-500">
                       <span>{cliente.telefone || 'Telefone não informado'}</span>
                       <span>{cliente.email || 'E-mail não informado'}</span>

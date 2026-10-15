@@ -17,10 +17,12 @@ import RegisterPage from './pages/RegisterPage/RegisterPage'
 import ResetPasswordPage from './pages/ResetPasswordPage/ResetPasswordPage'
 import TrialExpiredPage from './pages/TrialExpiredPage/TrialExpiredPage'
 import VeiculosPage from './pages/VeiculosPage/VeiculosPage'
+import EquipePage from './pages/EquipePage/EquipePage'
 
 function App() {
   return (
     <Routes>
+      <Route path="/equipe" element={<ProtectedRoute><EquipePage /></ProtectedRoute>} />
       <Route path="/historico/:tipo/:id" element={<ProtectedRoute><HistoricoPage /></ProtectedRoute>} />
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />

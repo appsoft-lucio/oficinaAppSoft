@@ -1,3 +1,4 @@
+import RegistroAutoria from '../../components/dashboard/RegistroAutoria'
 import CadastroEditDialog from '../../components/dashboard/CadastroEditDialog'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -338,6 +339,7 @@ export default function VeiculosPage() {
                         <strong className="block text-base font-black text-slate-950">
                           {veiculo.modelo}
                         </strong>
+                    <RegistroAutoria registro={veiculo} />
                         <span className="mt-1 block text-sm text-slate-500">
                           {clientesById[veiculo.cliente_id ?? '']?.nome ?? 'Cliente não informado'}
                         </span>

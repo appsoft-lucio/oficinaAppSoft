@@ -1,6 +1,7 @@
+import type { AutoriaRegistro } from './equipe'
 import { supabase } from '../lib/supabase'
 
-export type OrdemServico = {
+export type OrdemServico = AutoriaRegistro & {
   id: string
   cliente_id: string | null
   veiculo_id: string | null
@@ -20,7 +21,7 @@ export type OrdemServico = {
   created_at: string
 }
 
-export type OrdemPeca = {
+export type OrdemPeca = AutoriaRegistro & {
   id: string
   ordem_id: string
   descricao: string
@@ -67,7 +68,7 @@ type UpdateOrdemNotaParams = {
 }
 
 const ordemSelect =
-  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, nota_status, nota_numero, nota_emitida_em, valor, valor_servico, valor_pago, mecanico_ids, mecanico_divisao, comissao_percentual, created_at'
+  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, nota_status, nota_numero, nota_emitida_em, valor, valor_servico, valor_pago, mecanico_ids, mecanico_divisao, comissao_percentual, created_at, criado_por, alterado_por, alterado_em'
 
 function parseMoney(value?: string) {
   if (!value) {
@@ -109,7 +110,7 @@ export async function getOrdem(ordemId: string) {
 export async function listOrdemPecas(ordemId: string) {
   const { data, error } = await supabase
     .from('ordem_pecas')
-    .select('id, ordem_id, descricao, quantidade, valor_unitario, created_at')
+    .select('id, ordem_id, descricao, quantidade, valor_unitario, created_at, criado_por, alterado_por, alterado_em')
     .eq('ordem_id', ordemId)
     .order('created_at', { ascending: true })
 

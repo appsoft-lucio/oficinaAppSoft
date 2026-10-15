@@ -1,3 +1,4 @@
+import RegistroAutoria from '../../components/dashboard/RegistroAutoria'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import logoAppSoft from '../../assets/logo-appsoft-orange-semFundo.png'
@@ -271,6 +272,7 @@ export default function DocumentoPage() {
           <div>
             <img className="h-14 w-auto" src={logoAppSoft} alt="Oficina AppSoft" />
             <h1 className="mt-5 text-3xl font-black text-slate-950">{documentoTitle}</h1>
+            <RegistroAutoria registro={ordem} />
             <p className="mt-2 text-sm font-bold text-slate-500">
               Documento gerado em {formatDate(new Date().toISOString())}
             </p>
