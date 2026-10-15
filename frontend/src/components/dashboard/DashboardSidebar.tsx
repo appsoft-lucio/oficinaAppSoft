@@ -8,6 +8,7 @@ const menuItems = [
   { label: 'Ordens', to: '/ordens' },
   { label: 'Clientes', to: '/clientes' },
   { label: 'Veículos', to: '/veiculos' },
+  { label: 'Mecânicos', to: '/mecanicos' },
   { label: 'Financeiro', to: '/financeiro' },
   { label: 'Fiscal', to: '/fiscal' },
 ]

@@ -12,6 +12,8 @@ import {
   updateOrdemStatus,
 } from '../../services/ordens'
 import { listVeiculos, type Veiculo } from '../../services/veiculos'
+import { listMecanicos, type Mecanico } from '../../services/mecanicos'
+import { calcularRepasses } from '../../services/repasses'
 
 const statusOptions = [
   { label: 'Aberta', value: 'aberta' },
@@ -92,6 +94,9 @@ function formatVoiceTranscript(value: string) {
 
 export default function OrdensPage() {
   const [clienteId, setClienteId] = useState('')
+  const [mecanicos, setMecanicos] = useState<Mecanico[]>([])
+  const [mecanicoIds, setMecanicoIds] = useState<string[]>([])
+  const [mecanicoDivisao, setMecanicoDivisao] = useState<Record<string, number>>({})
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [descricao, setDescricao] = useState('')
   const [editingPecaIndex, setEditingPecaIndex] = useState<number | null>(null)
@@ -155,15 +160,17 @@ export default function OrdensPage() {
 
       setOficina(preparedOficina)
 
-      const [loadedClientes, loadedVeiculos, loadedOrdens] = await Promise.all([
+      const [loadedClientes, loadedVeiculos, loadedOrdens, loadedMecanicos] = await Promise.all([
         listClientes(preparedOficina.id),
         listVeiculos(preparedOficina.id),
         listOrdens(preparedOficina.id),
+        listMecanicos(preparedOficina.id),
       ])
 
       setClientes(loadedClientes)
       setVeiculos(loadedVeiculos)
       setOrdens(loadedOrdens)
+      setMecanicos(loadedMecanicos)
       setClienteId(loadedClientes[0]?.id ?? '')
     }
 
@@ -254,6 +261,16 @@ export default function OrdensPage() {
       return
     }
 
+    if (mecanicoIds.length === 0) {
+      setMessage('Selecione pelo menos um mecânico responsável pelo serviço.')
+      return
+    }
+
+    if (calcularRepasses(parseMoney(valor), mecanicoIds, mecanicoDivisao).length !== mecanicoIds.length) {
+      setMessage('A divis\u00e3o do repasse deve somar 100%, com percentuais inteiros de 1 a 100.')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -266,6 +283,8 @@ export default function OrdensPage() {
         titulo,
         valor,
         veiculoId,
+        mecanicoIds,
+        mecanicoDivisao,
       })
 
       setOrdens((currentOrdens) => [createdOrdem, ...currentOrdens])
@@ -276,6 +295,8 @@ export default function OrdensPage() {
       setStatus('aberta')
       setTitulo('')
       setValor('')
+      setMecanicoIds([])
+      setMecanicoDivisao({})
       setMessage('Ordem cadastrada com sucesso.')
     } catch {
       setMessage('Não foi possível cadastrar a ordem.')
@@ -652,6 +673,45 @@ export default function OrdensPage() {
                   </div>
                 </section>
 
+                <fieldset className="rounded-xl border border-slate-200 p-4">
+                  <legend className="px-1 text-sm font-black text-slate-700">Mecânicos responsáveis</legend>
+                  <p className="mb-3 text-sm text-slate-500">
+                    Informe a porcentagem de cada profissional sobre os 50% da mão de obra. A soma deve ser 100%. Peças ficam fora.
+                  </p>
+                  {mecanicos.length === 0 ? (
+                    <Link className="text-sm font-bold text-orange-700 underline" to="/mecanicos">Cadastre um mecânico para continuar</Link>
+                  ) : mecanicos.map((mecanico) => (
+                    <label className="mb-2 flex items-center gap-3 text-sm font-bold" key={mecanico.id}>
+                      <input type="checkbox" checked={mecanicoIds.includes(mecanico.id)}
+                        onChange={(event) => {
+                          const checked = event.target.checked
+                          setMecanicoIds((current) => checked ? [...current, mecanico.id] : current.filter((id) => id !== mecanico.id))
+                          setMecanicoDivisao((current) => {
+                            const next = { ...current }
+                            if (checked) next[mecanico.id] = mecanicoIds.length === 0 ? 100 : 0
+                            else delete next[mecanico.id]
+                            return next
+                          })
+                        }} />
+                      {mecanico.nome}
+                    </label>
+                  ))}
+                  {mecanicoIds.map((id) => (
+                    <label className="mt-3 block text-sm" key={id}>
+                      {mecanicos.find((mecanico) => mecanico.id === id)?.nome} (% do repasse)
+                      <input className="mt-1 h-10 w-full rounded-lg border border-slate-300 px-3"
+                        type="number" min={1} max={100} step={1} required
+                        value={mecanicoDivisao[id] ?? ''}
+                        onChange={(event) => setMecanicoDivisao((current) => ({ ...current, [id]: Number(event.target.value) }))} />
+                    </label>
+                  ))}
+                  {calcularRepasses(parseMoney(valor), mecanicoIds, mecanicoDivisao).map((repasse) => (
+                    <p className="mt-2 text-sm text-slate-600" key={repasse.mecanicoId}>
+                      {mecanicos.find((mecanico) => mecanico.id === repasse.mecanicoId)?.nome}: {repasse.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                    </p>
+                  ))}
+                </fieldset>
+
                 {message ? (
                   <p className="rounded-lg bg-orange-50 px-4 py-3 text-sm font-bold text-orange-700">
                     {message}
@@ -731,6 +791,14 @@ export default function OrdensPage() {
                           </Link>
                         </div>
                       </div>
+                    </div>
+                    <div className="mt-3 text-sm text-slate-600">
+                      {calcularRepasses(Number(ordem.valor_servico), ordem.mecanico_ids, ordem.mecanico_divisao).map((repasse) => (
+                        <p key={repasse.mecanicoId}>
+                          {mecanicos.find((mecanico) => mecanico.id === repasse.mecanicoId)?.nome ?? 'Mecânico'}: repasse previsto {repasse.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </p>
+                      ))}
+                      {ordem.mecanico_ids.length === 0 ? <p>Mecânico não informado</p> : null}
                     </div>
                     {ordem.descricao ? (
                       <p className="mt-3 text-sm leading-6 text-slate-600">{ordem.descricao}</p>

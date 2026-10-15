@@ -7,6 +7,7 @@ export type Veiculo = {
   marca: string | null
   modelo: string
   ano: number | null
+  quilometragem: number | null
   created_at: string
 }
 
@@ -17,12 +18,13 @@ type CreateVeiculoParams = {
   marca?: string
   modelo: string
   ano?: string
+  quilometragem: number
 }
 
 export async function listVeiculos(oficinaId: string) {
   const { data, error } = await supabase
     .from('veiculos')
-    .select('id, cliente_id, placa, marca, modelo, ano, created_at')
+    .select('id, cliente_id, placa, marca, modelo, ano, quilometragem, created_at')
     .eq('oficina_id', oficinaId)
     .order('created_at', { ascending: false })
 
@@ -40,7 +42,12 @@ export async function createVeiculo({
   modelo,
   oficinaId,
   placa,
+  quilometragem,
 }: CreateVeiculoParams) {
+  if (!Number.isSafeInteger(quilometragem) || quilometragem < 0 || quilometragem > 2147483647) {
+    throw new Error('Informe uma quilometragem inteira válida, maior ou igual a zero.')
+  }
+
   const parsedAno = ano ? Number(ano) : null
 
   const { data, error } = await supabase
@@ -52,8 +59,9 @@ export async function createVeiculo({
       modelo,
       oficina_id: oficinaId,
       placa: placa || null,
+      quilometragem,
     })
-    .select('id, cliente_id, placa, marca, modelo, ano, created_at')
+    .select('id, cliente_id, placa, marca, modelo, ano, quilometragem, created_at')
     .single()
 
   if (error) {

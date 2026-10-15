@@ -14,6 +14,8 @@ export type OrdemServico = {
   valor: number
   valor_servico: number
   valor_pago: number
+  mecanico_ids: string[]
+  mecanico_divisao: Record<string, number>
   created_at: string
 }
 
@@ -41,6 +43,8 @@ type CreateOrdemParams = {
   pecas?: CreateOrdemPecaParams[]
   status: string
   valor?: string
+  mecanicoIds?: string[]
+  mecanicoDivisao?: Record<string, number>
 }
 
 type UpdateOrdemStatusParams = {
@@ -61,7 +65,7 @@ type UpdateOrdemNotaParams = {
 }
 
 const ordemSelect =
-  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, nota_status, nota_numero, nota_emitida_em, valor, valor_servico, valor_pago, created_at'
+  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, nota_status, nota_numero, nota_emitida_em, valor, valor_servico, valor_pago, mecanico_ids, mecanico_divisao, created_at'
 
 function parseMoney(value?: string) {
   if (!value) {
@@ -123,6 +127,8 @@ export async function createOrdem({
   titulo,
   valor,
   veiculoId,
+  mecanicoIds = [],
+  mecanicoDivisao = {},
 }: CreateOrdemParams) {
   const valorServico = parseMoney(valor)
   const parsedPecas = pecas
@@ -152,6 +158,8 @@ export async function createOrdem({
       valor_servico: valorServico,
       valor_pago: 0,
       veiculo_id: veiculoId,
+      mecanico_ids: [...new Set(mecanicoIds)].sort(),
+      mecanico_divisao: mecanicoDivisao,
     })
     .select(ordemSelect)
     .single()

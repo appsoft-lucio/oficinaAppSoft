@@ -11,6 +11,8 @@ import {
   updateOrdemPagamentoStatus,
 } from '../../services/ordens'
 import { listVeiculos, type Veiculo } from '../../services/veiculos'
+import { listMecanicos, type Mecanico } from '../../services/mecanicos'
+import { calcularRepasses } from '../../services/repasses'
 
 const pagamentoStatusOptions = [
   { label: 'Em aberto', value: 'em_aberto' },
@@ -136,6 +138,7 @@ function buildPartialPayments(ordens: OrdemServico[]) {
 }
 
 export default function FinanceiroPage() {
+  const [mecanicos, setMecanicos] = useState<Mecanico[]>([])
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [customEndDate, setCustomEndDate] = useState(getDateInputValue(new Date()))
   const [customStartDate, setCustomStartDate] = useState(
@@ -284,16 +287,18 @@ export default function FinanceiroPage() {
 
       setOficina(preparedOficina)
 
-      const [loadedClientes, loadedOrdens, loadedVeiculos] = await Promise.all([
+      const [loadedClientes, loadedOrdens, loadedVeiculos, loadedMecanicos] = await Promise.all([
         listClientes(preparedOficina.id),
         listOrdens(preparedOficina.id),
         listVeiculos(preparedOficina.id),
+        listMecanicos(preparedOficina.id),
       ])
 
       setClientes(loadedClientes)
       setOrdens(loadedOrdens)
       setPartialPayments(buildPartialPayments(loadedOrdens))
       setVeiculos(loadedVeiculos)
+      setMecanicos(loadedMecanicos)
     }
 
     loadFinanceiro()
@@ -536,6 +541,25 @@ export default function FinanceiroPage() {
               label="Em aberto até hoje"
               value={formatCurrency(totalEmAbertoAteHoje)}
             />
+          </section>
+
+          <section className="mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+            <h2 className="text-xl font-black">Repasses previstos aos mecânicos</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              50% da mão de obra das ordens filtradas, conforme a porcentagem informada para cada responsável. Ordens canceladas e peças ficam fora do cálculo. Estes valores não confirmam pagamento.
+            </p>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {mecanicos.map((mecanico) => {
+                const total = filteredOrdens.filter((ordem) => ordem.status !== 'cancelada')
+                  .reduce((sum, ordem) => sum + (calcularRepasses(Number(ordem.valor_servico), ordem.mecanico_ids, ordem.mecanico_divisao)
+                    .find((repasse) => repasse.mecanicoId === mecanico.id)?.valor ?? 0), 0)
+                return <div className="rounded-xl bg-slate-50 p-4" key={mecanico.id}>
+                  <strong className="block text-sm">{mecanico.nome}</strong>
+                  <span className="mt-1 block font-black text-orange-700">{formatCurrency(total)}</span>
+                </div>
+              })}
+              {mecanicos.length === 0 ? <p className="text-sm text-slate-500">Nenhum mecânico cadastrado.</p> : null}
+            </div>
           </section>
 
           <section className="mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">

@@ -6,9 +6,12 @@ import { supabase } from '../../lib/supabase'
 import { listClientes, type Cliente } from '../../services/clientes'
 import { ensureUserOficina, type Oficina } from '../../services/oficinas'
 import { createVeiculo, listVeiculos, type Veiculo } from '../../services/veiculos'
+import { databaseErrorMessage } from '../../services/databaseErrors'
 
 export default function VeiculosPage() {
   const [ano, setAno] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [clienteId, setClienteId] = useState('')
   const [clientes, setClientes] = useState<Cliente[]>([])
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -18,6 +21,7 @@ export default function VeiculosPage() {
   const [modelo, setModelo] = useState('')
   const [oficina, setOficina] = useState<Oficina | null>(null)
   const [placa, setPlaca] = useState('')
+  const [quilometragem, setQuilometragem] = useState('')
   const [requiresRealLogin, setRequiresRealLogin] = useState(false)
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
   const oficinaName = oficina?.nome ?? 'Oficina Demonstração'
@@ -45,17 +49,23 @@ export default function VeiculosPage() {
 
       setOficina(preparedOficina)
 
-      const [loadedClientes, loadedVeiculos] = await Promise.all([
+      const [loadedClientes, loadedVeiculos] = await Promise.allSettled([
         listClientes(preparedOficina.id),
         listVeiculos(preparedOficina.id),
       ])
 
-      setClientes(loadedClientes)
-      setVeiculos(loadedVeiculos)
-      setClienteId(loadedClientes[0]?.id ?? '')
+      if (loadedClientes.status === 'fulfilled') {
+        setClientes(loadedClientes.value)
+        setClienteId(loadedClientes.value[0]?.id ?? '')
+      }
+      if (loadedVeiculos.status === 'fulfilled') setVeiculos(loadedVeiculos.value)
+      const failed = [loadedClientes, loadedVeiculos].find((result) => result.status === 'rejected')
+      if (failed?.status === 'rejected') throw failed.reason
     }
 
     loadData()
+      .catch((error) => setLoadError(databaseErrorMessage(error, 'Não foi possível carregar os clientes e veículos. Recarregue a página para tentar novamente.')))
+      .finally(() => setIsLoading(false))
   }, [])
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -82,6 +92,7 @@ export default function VeiculosPage() {
         modelo,
         oficinaId: oficina.id,
         placa,
+        quilometragem: Number(quilometragem),
       })
 
       setVeiculos((currentVeiculos) => [createdVeiculo, ...currentVeiculos])
@@ -89,9 +100,10 @@ export default function VeiculosPage() {
       setMarca('')
       setModelo('')
       setPlaca('')
+      setQuilometragem('')
       setMessage('Veículo cadastrado com sucesso.')
-    } catch {
-      setMessage('Não foi possível cadastrar o veículo.')
+    } catch (error) {
+      setMessage(databaseErrorMessage(error, 'Não foi possível cadastrar o veículo.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -135,7 +147,11 @@ export default function VeiculosPage() {
               Vincule o veículo a um cliente para abrir ordens depois.
             </p>
 
-            {requiresRealLogin ? (
+            {isLoading ? (
+              <p className="mt-6 text-sm text-slate-500">Carregando clientes e veículos...</p>
+            ) : loadError ? (
+              <p role="alert" className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">{loadError}</p>
+            ) : requiresRealLogin ? (
               <div className="mt-6 rounded-xl bg-orange-50 p-4 text-sm font-bold text-orange-700">
                 Entre com sua conta real para salvar veículos no Supabase. O acesso demo é apenas
                 para apresentação visual.
@@ -209,6 +225,22 @@ export default function VeiculosPage() {
                   />
                 </label>
 
+                <label className="block">
+                  <span className="text-sm font-black text-slate-700">Quilometragem (km)</span>
+                  <input
+                    className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
+                    inputMode="numeric"
+                    max={2147483647}
+                    min={0}
+                    onChange={(event) => setQuilometragem(event.target.value)}
+                    placeholder="Ex.: 85000"
+                    required
+                    step={1}
+                    type="number"
+                    value={quilometragem}
+                  />
+                </label>
+
                 {message ? (
                   <p className="rounded-lg bg-orange-50 px-4 py-3 text-sm font-bold text-orange-700">
                     {message}
@@ -235,7 +267,9 @@ export default function VeiculosPage() {
             </div>
 
             <div className="mt-5 grid gap-3">
-              {veiculos.length > 0 ? (
+              {isLoading || loadError ? (
+                <p className="text-sm text-slate-500">{isLoading ? 'Carregando veículos...' : 'A listagem está indisponível até resolver o erro de carregamento.'}</p>
+              ) : veiculos.length > 0 ? (
                 veiculos.map((veiculo) => (
                   <article
                     className="rounded-xl border border-slate-200 p-4"
@@ -257,6 +291,11 @@ export default function VeiculosPage() {
                     <div className="mt-3 grid gap-1 text-sm text-slate-500">
                       <span>{veiculo.marca || 'Marca não informada'}</span>
                       <span>{veiculo.ano || 'Ano não informado'}</span>
+                      <span>
+                        {veiculo.quilometragem == null
+                          ? 'Quilometragem não informada'
+                          : `${veiculo.quilometragem.toLocaleString('pt-BR')} km`}
+                      </span>
                     </div>
                   </article>
                 ))

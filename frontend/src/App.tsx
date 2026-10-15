@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import DeveloperRoute from './components/auth/DeveloperRoute'
+import MecanicosPage from './pages/MecanicosPage/MecanicosPage'
 import ClientesPage from './pages/ClientesPage/ClientesPage'
 import DashboardPage from './pages/DashboardPage/DashboardPage'
 import DeveloperPage from './pages/DeveloperPage/DeveloperPage'
@@ -85,6 +86,7 @@ function App() {
           </ProtectedRoute>
         }
       />
+      <Route path="/mecanicos" element={<ProtectedRoute><MecanicosPage /></ProtectedRoute>} />
       <Route path="/criar-conta" element={<RegisterPage />} />
       <Route path="/acesso-indisponivel" element={<TrialExpiredPage />} />
       <Route path="/esqueci-minha-senha" element={<ForgotPasswordPage />} />
