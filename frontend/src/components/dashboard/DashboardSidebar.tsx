@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
 import logoAppSoft from '../../assets/logo-appsoft-orange-semFundo.png'
 import { supabase } from '../../lib/supabase'
 import InstallAppButton from '../pwa/InstallAppButton'
@@ -27,9 +27,9 @@ export default function DashboardSidebar({ oficinaName }: DashboardSidebarProps)
 
   return (
     <aside className="flex min-h-screen flex-col bg-slate-950 px-5 py-6 text-white">
-      <Link to="/">
+      <div>
         <img className="h-16 w-auto" src={logoAppSoft} alt="Oficina AppSoft" />
-      </Link>
+      </div>
 
       <div className="mt-8 rounded-xl bg-white/5 p-4">
         <p className="text-xs font-black uppercase tracking-[0.16em] text-orange-400">
