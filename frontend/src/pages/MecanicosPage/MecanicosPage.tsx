@@ -1,6 +1,7 @@
 import RegistroAutoria from '../../components/dashboard/RegistroAutoria'
 import CadastroEditDialog from '../../components/dashboard/CadastroEditDialog'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
 import DashboardTopbar from '../../components/dashboard/DashboardTopbar'
 import { supabase } from '../../lib/supabase'
@@ -204,11 +205,13 @@ export default function MecanicosPage() {
                       {mecanico.nome}
                     </strong>
                     <RegistroAutoria registro={mecanico} />
+                    <p className="mt-2 text-xs text-slate-500">Cadastrado em {new Date(mecanico.created_at).toLocaleString('pt-BR')}</p>
                     <div className="mt-2 grid gap-1 text-sm text-slate-500">
                       <span>{mecanico.telefone || 'Telefone não informado'}</span>
                       <span>{mecanico.email || 'E-mail não informado'}</span>
                     </div>
                     <button type="button" onClick={() => setEditingRegistro(mecanico)} className="mt-4 mr-2 min-h-10 rounded-lg border border-orange-200 px-3 text-sm font-bold text-orange-700">Editar</button>
+                    <Link to={`/historico/mecanicos/${mecanico.id}`} className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 text-sm font-bold">Ver histórico</Link>
                   </article>
                 ))
               ) : (

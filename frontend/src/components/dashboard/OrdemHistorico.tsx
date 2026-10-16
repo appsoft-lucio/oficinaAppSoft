@@ -23,7 +23,7 @@ function valorCampo(campo: string, value: unknown, mecanicos: Record<string,stri
   return String(value)
 }
 
-export default function OrdemHistorico({ ordem, mecanicos = {} }: { ordem: OrdemServico; mecanicos?: Record<string,string> }) {
+export default function OrdemHistorico({ ordem, mecanicos = {} }: { ordem: Pick<OrdemServico,'id'|'entrada_em'|'created_at'|'alterado_em'>; mecanicos?: Record<string,string> }) {
   const [open,setOpen] = useState(false)
   const [events,setEvents] = useState<OrdemEvento[]>([])
   const [loading,setLoading] = useState(false)
