@@ -1,4 +1,5 @@
 import RegistroAutoria from '../../components/dashboard/RegistroAutoria'
+import OrdemHistorico from '../../components/dashboard/OrdemHistorico'
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import DashboardSidebar from '../../components/dashboard/DashboardSidebar'
@@ -129,6 +130,7 @@ export default function HistoricoPage() {
                   <p className="mt-2">Mão de obra: {currency(ordem.valor_servico)} · Total: {currency(ordem.valor)} · Recebido: {currency(ordem.valor_pago)}</p>
                   {data.pecas.filter((peca) => peca.ordem_id === ordem.id).map((peca) => <p className="mt-1 text-slate-600" key={peca.id}>{peca.descricao} — {peca.quantidade} × {currency(peca.valor_unitario)}</p>)}
                   <Link className="mt-3 inline-flex min-h-10 items-center rounded-lg border border-slate-300 px-3 font-bold" to={`/documentos/${ordem.id}/orcamento`}>Ver documento da ordem</Link>
+                  <OrdemHistorico ordem={ordem} />
                 </article>)}
                 {data.ordens.length === 0 ? <p className="text-sm text-slate-500">Nenhuma manutenção registrada.</p> : null}
               </div>

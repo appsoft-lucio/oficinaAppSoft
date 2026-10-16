@@ -42,3 +42,18 @@ test('returns the database rejection without attempting a partial update', async
   const { updateOrdem } = await load({ rpc: () => ({ single: async () => ({ data: null, error: expected }) }) })
   await assert.rejects(updateOrdem(params), (error) => error === expected)
 })
+
+test('saves arrival and other changes in a single transactional RPC', async () => {
+  const entradaEm = '2026-10-16T11:30:00.000Z'
+  const { updateOrdem } = await load({ rpc: (name,payload) => {
+    assert.equal(name,'editar_ordem_com_entrada')
+    assert.equal(payload.p_entrada_em,entradaEm)
+    return { single: async () => ({ data: { id:'ordem',entrada_em:entradaEm }, error:null }) }
+  } })
+  assert.equal((await updateOrdem({ ...params,entradaEm })).entrada_em,entradaEm)
+})
+
+test('rejects an invalid arrival date before sending changes', async () => {
+  const { updateOrdem } = await load({ rpc: () => { throw new Error('Unexpected database write') } })
+  await assert.rejects(updateOrdem({ ...params,entradaEm:'invalid' }),/data e hora/)
+})

@@ -19,10 +19,10 @@ export function gerarRelatorioCsv(oficina: string, ordens: OrdemServico[], clien
   const veiculosById = new Map(veiculos.map((veiculo) => [veiculo.id, veiculo]))
   const money = (value: number) => Number(value).toFixed(2).replace('.', ',')
   const rows: (string | number)[][] = [
-    ['Oficina', 'Ordem', 'Abertura', 'Cliente', 'Veículo', 'Placa', 'Serviço', 'Descrição', 'Status', 'Pagamento', 'Mão de obra (R$)', 'Peças (R$)', 'Total (R$)', 'Recebido (R$)', 'Comissão (%)'],
+    ['Oficina', 'Ordem', 'Abertura', 'Entrada do veículo', 'Cliente', 'Veículo', 'Placa', 'Serviço', 'Descrição', 'Status', 'Pagamento', 'Mão de obra (R$)', 'Peças (R$)', 'Total (R$)', 'Recebido (R$)', 'Comissão (%)'],
     ...ordens.map((ordem) => {
       const veiculo = veiculosById.get(ordem.veiculo_id ?? '')
-      return [oficina, ordem.id, new Date(ordem.created_at).toLocaleString('pt-BR'),
+      return [oficina, ordem.id, new Date(ordem.created_at).toLocaleString('pt-BR'), ordem.entrada_em ? new Date(ordem.entrada_em).toLocaleString('pt-BR') : 'Não informada',
         clientesById.get(ordem.cliente_id ?? '') ?? 'Cliente não informado',
         veiculo?.modelo ?? 'Veículo não informado', veiculo?.placa ?? '', ordem.titulo, ordem.descricao ?? '',
         labels[ordem.status] ?? ordem.status, labels[ordem.pagamento_status] ?? ordem.pagamento_status,

@@ -4,6 +4,7 @@ import autoTable from 'jspdf-autotable'
 type DocumentoPdf = {
   titulo: string
   referencia: string
+  entradaEm?: string | null
   oficina: string
   cliente: string[]
   veiculo: string[]
@@ -24,7 +25,7 @@ export function criarDocumentoPdf(data: DocumentoPdf) {
     startY: 27,
     margin,
     theme: 'plain',
-    body: [[data.oficina], [`Documento: ${data.referencia}`], [`Gerado em ${new Date().toLocaleDateString('pt-BR')}`]],
+    body: [[data.oficina], [`Documento: ${data.referencia}`], [`Entrada do veículo: ${data.entradaEm ? new Date(data.entradaEm).toLocaleString('pt-BR') : 'Não informada'}`], [`Gerado em ${new Date().toLocaleDateString('pt-BR')}`]],
     styles: { fontSize: 10, overflow: 'linebreak' },
   })
   const endY = () => (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY

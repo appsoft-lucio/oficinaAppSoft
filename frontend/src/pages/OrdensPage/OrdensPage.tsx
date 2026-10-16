@@ -20,6 +20,8 @@ import { listMecanicos, type Mecanico } from '../../services/mecanicos'
 import { calcularRepasses } from '../../services/repasses'
 import { databaseErrorMessage } from '../../services/databaseErrors'
 import { transferErrorMessage } from '../../services/vehicleHistory'
+import OrdemHistorico from '../../components/dashboard/OrdemHistorico'
+import { toDateTimeInput } from '../../services/ordemHistorico'
 
 const statusOptions = [
   { label: 'Aberta', value: 'aberta' },
@@ -122,6 +124,8 @@ export default function OrdensPage() {
   const [statusMessage, setStatusMessage] = useState('')
   const [status, setStatus] = useState('aberta')
   const [titulo, setTitulo] = useState('')
+  const [entradaEm, setEntradaEm] = useState(() => toDateTimeInput())
+  const [updatingStatus, setUpdatingStatus] = useState<Record<string, boolean>>({})
   const [valor, setValor] = useState('')
   const [veiculoId, setVeiculoId] = useState('')
   const [veiculos, setVeiculos] = useState<Veiculo[]>([])
@@ -294,6 +298,10 @@ export default function OrdensPage() {
       return
     }
 
+    if (!entradaEm || !Number.isFinite(new Date(entradaEm).getTime())) {
+      setMessage('Informe a data e hora de entrada do veículo.')
+      return
+    }
     setIsSubmitting(true)
 
     try {
@@ -309,6 +317,8 @@ export default function OrdensPage() {
         mecanicoIds,
         mecanicoDivisao,
         comissaoPercentual: Number(comissaoPercentual),
+        entradaEm: editingOrdem?.entrada_em && entradaEm === toDateTimeInput(editingOrdem.entrada_em)
+          ? editingOrdem.entrada_em : new Date(entradaEm).toISOString(),
       }
       const createdOrdem = editingOrdem
         ? await updateOrdem({ ...params, ordemId: editingOrdem.id })
@@ -324,6 +334,7 @@ export default function OrdensPage() {
       setPecas([])
       setStatus('aberta')
       setTitulo('')
+      setEntradaEm(toDateTimeInput())
       setValor('')
       setMecanicoIds([])
       setMecanicoDivisao({})
@@ -347,6 +358,7 @@ export default function OrdensPage() {
       setClienteId(ordem.cliente_id ?? '')
       setVeiculoId(ordem.veiculo_id ?? '')
       setTitulo(ordem.titulo); setDescricao(ordem.descricao ?? ''); setStatus(ordem.status)
+      setEntradaEm(ordem.entrada_em ? toDateTimeInput(ordem.entrada_em) : '')
       setValor(String(ordem.valor_servico)); setComissaoPercentual(String(ordem.comissao_percentual))
       setMecanicoIds(ordem.mecanico_ids); setMecanicoDivisao(ordem.mecanico_divisao)
       setPecas(loadedPecas.map((peca) => ({ descricao: peca.descricao, quantidade: String(peca.quantidade), valorUnitario: String(peca.valor_unitario) })))
@@ -361,9 +373,12 @@ export default function OrdensPage() {
     setPecas([]); setPecaDraft({ ...emptyPeca }); setEditingPecaIndex(null)
     setMecanicoIds([]); setMecanicoDivisao({}); setComissaoPercentual(''); setMessage('')
     setClienteId(clientes[0]?.id ?? '')
+    setEntradaEm(toDateTimeInput())
   }
 
   async function handleStatusChange(ordemId: string, nextStatus: string) {
+    if (updatingStatus[ordemId] || ordens.find((ordem) => ordem.id === ordemId)?.status === nextStatus) return
+    setUpdatingStatus((current) => ({ ...current, [ordemId]: true }))
     setStatusMessage('')
 
     try {
@@ -375,9 +390,11 @@ export default function OrdensPage() {
       setOrdens((currentOrdens) =>
         currentOrdens.map((ordem) => (ordem.id === ordemId ? updatedOrdem : ordem)),
       )
-      setStatusMessage('Status atualizado.')
+      setStatusMessage('Status atualizado. A mudança, o horário e o responsável foram registrados no histórico da OS.')
     } catch {
       setStatusMessage('Não foi possível atualizar o status.')
+    } finally {
+      setUpdatingStatus((current) => ({ ...current, [ordemId]: false }))
     }
   }
 
@@ -480,6 +497,12 @@ export default function OrdensPage() {
               </div>
             ) : (
               <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
+                <label className="block">
+                  <span className="text-sm font-black text-slate-700">Data e hora de entrada do veículo</span>
+                  <input type="datetime-local" step="1" required value={entradaEm} onChange={(event) => setEntradaEm(event.target.value)}
+                    className="mt-2 h-12 w-full rounded-lg border border-slate-300 px-4 outline-none focus:border-orange-500 focus:ring-4 focus:ring-orange-100" />
+                  <span className="mt-1 block text-xs text-slate-500">Horário deste dispositivo. Correções ficam registradas no histórico.</span>
+                </label>
                 <label className="block">
                   <span className="text-sm font-black text-slate-700">Cliente</span>
                   <select
@@ -832,6 +855,7 @@ export default function OrdensPage() {
                         <select
                           className="h-9 rounded-lg border border-orange-200 bg-orange-50 px-2 text-xs font-black text-orange-700 outline-none transition focus:border-orange-500 focus:ring-4 focus:ring-orange-100"
                           id={`status-${ordem.id}`}
+                          disabled={updatingStatus[ordem.id] || isSubmitting || isLoadingEdit || editingOrdem?.id === ordem.id}
                           onChange={(event) => handleStatusChange(ordem.id, event.target.value)}
                           value={ordem.status}
                         >
@@ -845,7 +869,7 @@ export default function OrdensPage() {
                           R$ {Number(ordem.valor).toFixed(2)}
                         </strong>
                         <div className="flex flex-wrap gap-2 sm:justify-end">
-                          <button type="button" disabled={isSubmitting || isLoadingEdit}
+                          <button type="button" disabled={isSubmitting || isLoadingEdit || updatingStatus[ordem.id]}
                             onClick={() => handleEditOrdem(ordem.id)}
                             className="min-h-10 rounded-lg border border-orange-200 px-3 py-2 text-xs font-black text-orange-700 disabled:opacity-50">Editar ordem / comissão</button>
                           <Link
@@ -875,6 +899,7 @@ export default function OrdensPage() {
                     {ordem.descricao ? (
                       <p className="mt-3 text-sm leading-6 text-slate-600">{ordem.descricao}</p>
                     ) : null}
+                    <OrdemHistorico ordem={ordem} mecanicos={Object.fromEntries(mecanicos.map((mecanico) => [mecanico.id,mecanico.nome]))} />
                   </article>
                 ))
               ) : (

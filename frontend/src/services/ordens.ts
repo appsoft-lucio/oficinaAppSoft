@@ -19,6 +19,7 @@ export type OrdemServico = AutoriaRegistro & {
   mecanico_divisao: Record<string, number>
   comissao_percentual: number
   created_at: string
+  entrada_em?: string | null
 }
 
 export type OrdemPeca = AutoriaRegistro & {
@@ -48,6 +49,7 @@ type CreateOrdemParams = {
   mecanicoIds?: string[]
   mecanicoDivisao?: Record<string, number>
   comissaoPercentual: number
+  entradaEm?: string
 }
 
 type UpdateOrdemStatusParams = {
@@ -68,7 +70,7 @@ type UpdateOrdemNotaParams = {
 }
 
 const ordemSelect =
-  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, nota_status, nota_numero, nota_emitida_em, valor, valor_servico, valor_pago, mecanico_ids, mecanico_divisao, comissao_percentual, created_at, criado_por, alterado_por, alterado_em'
+  'id, cliente_id, veiculo_id, titulo, descricao, status, pagamento_status, nota_status, nota_numero, nota_emitida_em, valor, valor_servico, valor_pago, mecanico_ids, mecanico_divisao, comissao_percentual, created_at, entrada_em, criado_por, alterado_por, alterado_em'
 
 function parseMoney(value?: string) {
   if (!value) {
@@ -133,7 +135,9 @@ export async function createOrdem({
   mecanicoIds = [],
   mecanicoDivisao = {},
   comissaoPercentual,
+  entradaEm,
 }: CreateOrdemParams) {
+  if (entradaEm !== undefined && !Number.isFinite(Date.parse(entradaEm))) throw new Error('Informe a data e hora de entrada do veículo.')
   if (!Number.isInteger(comissaoPercentual) || comissaoPercentual < 1 || comissaoPercentual > 100) {
     throw new Error('Informe a comissão entre 1% e 100%.')
   }
@@ -168,6 +172,7 @@ export async function createOrdem({
       mecanico_ids: [...new Set(mecanicoIds)].sort(),
       mecanico_divisao: mecanicoDivisao,
       comissao_percentual: comissaoPercentual,
+      ...(entradaEm !== undefined ? { entrada_em: entradaEm } : {}),
     })
     .select(ordemSelect)
     .single()
@@ -193,7 +198,8 @@ export async function createOrdem({
   return data
 }
 
-export async function updateOrdem({ ordemId, titulo, descricao, status, valor, pecas = [], mecanicoIds = [], mecanicoDivisao = {}, comissaoPercentual }: Omit<CreateOrdemParams, 'clienteId' | 'veiculoId' | 'oficinaId'> & { ordemId: string }) {
+export async function updateOrdem({ ordemId, titulo, descricao, status, valor, pecas = [], mecanicoIds = [], mecanicoDivisao = {}, comissaoPercentual, entradaEm }: Omit<CreateOrdemParams, 'clienteId' | 'veiculoId' | 'oficinaId'> & { ordemId: string }) {
+  if (entradaEm !== undefined && !Number.isFinite(Date.parse(entradaEm))) throw new Error('Informe a data e hora de entrada do veículo.')
   const valorServico = Number((valor || '0').replace(',', '.'))
   if (!titulo.trim() || !Number.isFinite(valorServico) || valorServico < 0) throw new Error('Informe o serviço e um valor de mão de obra válido.')
   if (!Number.isInteger(comissaoPercentual) || comissaoPercentual < 1 || comissaoPercentual > 100) throw new Error('Informe a comissão entre 1% e 100%.')
@@ -204,10 +210,11 @@ export async function updateOrdem({ ordemId, titulo, descricao, status, valor, p
   }))
   if (parsedPecas.some((peca) => !peca.descricao || !Number.isFinite(peca.quantidade) || peca.quantidade <= 0
     || !Number.isFinite(peca.valor_unitario) || peca.valor_unitario < 0)) throw new Error('Confira a descrição, a quantidade e o valor das peças.')
-  const { data, error } = await supabase.rpc('editar_ordem', {
+  const { data, error } = await supabase.rpc(entradaEm === undefined ? 'editar_ordem' : 'editar_ordem_com_entrada', {
     p_ordem_id: ordemId, p_titulo: titulo.trim(), p_descricao: descricao || '', p_status: status,
     p_valor_servico: valorServico, p_pecas: parsedPecas, p_mecanico_ids: [...new Set(mecanicoIds)].sort(),
     p_mecanico_divisao: mecanicoDivisao, p_comissao_percentual: comissaoPercentual,
+    ...(entradaEm !== undefined ? { p_entrada_em: entradaEm } : {}),
   }).single()
   if (error) throw error
   return data as OrdemServico
