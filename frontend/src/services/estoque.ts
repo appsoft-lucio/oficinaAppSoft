@@ -60,10 +60,44 @@ export async function listEstoqueMovimentos(produtoId:string,before?:Pick<Movime
   if(error) throw error
   return data as MovimentoEstoque[]
 }
-export function validarFotoProduto(file:Pick<File,'type'|'size'>) {
-  if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size<=0||file.size>5*1024*1024) throw new Error('Escolha uma foto JPG, PNG ou WebP de até 5 MB.')
+export function validarFotoProduto(file:Pick<File,'type'|'size'>,verificarTamanho=true) {
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size<=0||(verificarTamanho&&file.size>5*1024*1024)) throw new Error('Escolha uma foto JPG, PNG ou WebP de até 5 MB.')
+}
+export async function prepararFotoProduto(file:File):Promise<File> {
+  validarFotoProduto(file,false)
+  if(file.size<=5*1024*1024)return file
+  const url=URL.createObjectURL(file)
+  try{
+    const imagem=new Image()
+    await new Promise<void>((resolve,reject)=>{
+      imagem.onload=()=>resolve()
+      imagem.onerror=()=>reject(new Error('Não foi possível ler a foto. Escolha outra imagem.'))
+      imagem.src=url
+    })
+    const canvas=document.createElement('canvas')
+    const contexto=canvas.getContext('2d')
+    if(!contexto)throw new Error('Não foi possível ajustar a foto neste navegador.')
+    let escala=Math.min(1,2560/Math.max(imagem.naturalWidth,imagem.naturalHeight))
+    for(let tentativa=0;tentativa<8;tentativa++){
+      canvas.width=Math.max(1,Math.round(imagem.naturalWidth*escala))
+      canvas.height=Math.max(1,Math.round(imagem.naturalHeight*escala))
+      contexto.fillStyle='#ffffff'
+      contexto.fillRect(0,0,canvas.width,canvas.height)
+      contexto.drawImage(imagem,0,0,canvas.width,canvas.height)
+      const blob=await new Promise<Blob|null>((resolve)=>canvas.toBlob(resolve,'image/jpeg',0.85))
+      if(!blob)throw new Error('Não foi possível ajustar a foto. Escolha outra imagem.')
+      if(blob.size>0&&blob.size<=5*1024*1024){
+        const ajustada=new File([blob],`${file.name.replace(/\.[^.]+$/,'')}.jpg`,{type:blob.type,lastModified:file.lastModified})
+        validarFotoProduto(ajustada)
+        return ajustada
+      }
+      escala*=0.75
+    }
+    throw new Error('Não foi possível reduzir a foto para até 5 MB. Escolha outra imagem.')
+  }finally{URL.revokeObjectURL(url)}
 }
 export async function uploadFotoProduto(oficinaId:string,produtoId:string,file:File) {
+  file=await prepararFotoProduto(file)
   validarFotoProduto(file)
   const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp'} as Record<string,string>)[file.type]
   const path=`${oficinaId}/${produtoId}/${crypto.randomUUID()}.${ext}`
