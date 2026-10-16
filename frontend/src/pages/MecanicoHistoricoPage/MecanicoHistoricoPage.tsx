@@ -81,6 +81,17 @@ export default function MecanicoHistoricoPage() {
               <RegistroAutoria registro={data.mecanico}/>
               <p className="mt-3 text-sm font-bold text-slate-700">Em todo o histórico: {total?.servicos} OS associada(s), {total?.veiculos} veículo(s) e {moeda(total?.recebido??0)} em repasses pagos.</p>
             </section>
+            <section aria-label="Saldo acumulado de comissões" className="space-y-3">
+              <h2 className="text-xl font-black">Comissões e recebimentos · todo o histórico</h2>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <SummaryCard label="Comissão total" value={moeda(total?.comissaoTotal??0)} detail="Participações atuais e anteriores; exclui canceladas"/>
+                <SummaryCard label="Já recebida" value={moeda(total?.recebido??0)} detail="Repasses pagos; exclui lançamentos cancelados"/>
+                <SummaryCard label="A receber" value={moeda(total?.aReceber??0)} detail="Comissão total menos o que já foi pago"/>
+              </div>
+              <p className="text-sm text-slate-600">Saldo acumulado de todos os registros, incluindo comissões previstas de OS em aberto. O filtro abaixo não altera esses três valores. Os repasses são abatidos do total do mecânico, sem presumir quitação de uma OS específica.</p>
+              {(total?.adiantamento??0)>0?<p className="rounded-lg bg-blue-50 p-3 text-sm font-bold text-blue-900">Repasses acima da comissão registrada: {moeda(total?.adiantamento??0)}. O valor a receber fica em zero.</p>:null}
+              {(total?.semComissao??0)>0?<p className="rounded-lg bg-amber-50 p-3 text-sm text-amber-900">Há {total?.semComissao} participação(ões) antiga(s) sem valor de comissão disponível. O total e o saldo a receber consideram somente as comissões conhecidas e podem estar incompletos.</p>:null}
+            </section>
             <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
               <h2 className="text-lg font-black">Consultar período</h2>
               <div className="mt-4 flex flex-wrap items-end gap-4">
@@ -94,10 +105,10 @@ export default function MecanicoHistoricoPage() {
               <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 <SummaryCard label="OS no histórico" value={String(summary.servicos)} detail={`${summary.concluidos} concluída(s) na última situação registrada`}/>
                 <SummaryCard label="Veículos associados" value={String(summary.veiculos)} detail={`${summary.emAberto} OS atual(is) em aberto`}/>
-                <SummaryCard label="Comissão prevista atual" value={moeda(summary.comissaoPrevista)} detail="Vínculos atuais; exclui OS canceladas"/>
-                <SummaryCard label="Repasses recebidos" value={moeda(summary.recebido)} detail={`${summary.pagamentos} pagamento(s); exclui cancelados`}/>
+                <SummaryCard label="Comissão das OS do período" value={moeda(summary.comissaoTotal)} detail="Comissões registradas; exclui canceladas"/>
+                <SummaryCard label="Recebido no período" value={moeda(summary.recebido)} detail={`${summary.pagamentos} pagamento(s); exclui cancelados`}/>
               </section>
-              <p className="text-sm text-slate-600">A comissão prevista não confirma pagamento. Um repasse pode pagar várias OS. Participações anteriores permanecem no histórico, mas não entram na previsão atual.</p>
+              <p className="text-sm text-slate-600">A comissão prevista não confirma pagamento. Os serviços e os pagamentos deste período podem corresponder a datas diferentes; consulte o saldo acumulado acima para ver o total a receber.</p>
               <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
                 <h2 className="text-xl font-black">Veículos e serviços</h2>
                 <p className="mt-2 text-sm text-slate-600">Cada item corresponde a uma OS na qual este mecânico foi incluído. O status diferencia o que ainda está em aberto do que foi concluído ou cancelado.</p>

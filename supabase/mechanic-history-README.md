@@ -7,8 +7,14 @@ período e totais de repasse por mês; pagamentos cancelados não somam no receb
 
 Os serviços usam a data de entrada do veículo e, quando desconhecida, a data de
 criação da OS. Repasses usam a data do pagamento. Comissão prevista e pagamento
-são conceitos separados: um repasse pode abranger várias OS, e o sistema não
-deduz uma quitação por OS nem um saldo devido a partir da diferença desses totais.
+são conceitos separados: um repasse pode abranger várias OS. Os cartões de todo
+o histórico mostram comissão total registrada (participações atuais e anteriores,
+exceto canceladas), já recebida e a receber (`máximo(total - recebido, 0)`). Incluem
+comissões previstas de OS em aberto. Pagamentos acima do total são mostrados
+separadamente. O saldo é global do mecânico e não presume quitação de uma OS.
+Os filtros de período não alteram esse saldo acumulado, pois serviços e pagamentos
+podem estar em períodos distintos. Comissões antigas desconhecidas são sinalizadas;
+nesse caso, total e saldo consideram apenas os valores disponíveis.
 
 A tabela `mecanico_servicos`, mantida por trigger, preserva o último retrato da
 participação de cada mecânico em uma OS. Quando ele é retirado, o título,

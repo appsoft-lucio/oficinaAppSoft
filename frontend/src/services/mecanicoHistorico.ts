@@ -60,6 +60,9 @@ export function resumirHistoricoMecanico(servicos: MecanicoServico[],pagamentos:
   const atuais=servicos.filter((item) => item.vinculado && item.status!=='cancelada')
   const ativos=pagamentos.filter((item) => !item.cancelado)
   const comissao=atuais.reduce((total,item) => total+Math.round((comissaoServicoMecanico(item)??0)*100),0)
+  const elegiveis=servicos.filter((item) => item.status!=='cancelada')
+  const comissaoTotal=elegiveis.reduce((total,item) => total+Math.round((comissaoServicoMecanico(item)??0)*100),0)
+  const recebido=ativos.reduce((total,item) => total+Math.round(Number(item.valor)*100),0)
   return {
     servicos:servicos.length,
     concluidos:servicos.filter((item) => item.status==='concluida').length,
@@ -67,7 +70,11 @@ export function resumirHistoricoMecanico(servicos: MecanicoServico[],pagamentos:
     anteriores:servicos.filter((item) => !item.vinculado).length,
     veiculos:new Set(servicos.filter((item) => item.veiculo_id).map((item) => item.veiculo_id)).size,
     comissaoPrevista:comissao/100,
-    recebido:ativos.reduce((total,item) => total+Math.round(Number(item.valor)*100),0)/100,
+    comissaoTotal:comissaoTotal/100,
+    recebido:recebido/100,
+    aReceber:Math.max(comissaoTotal-recebido,0)/100,
+    adiantamento:Math.max(recebido-comissaoTotal,0)/100,
+    semComissao:elegiveis.filter((item) => comissaoServicoMecanico(item)===null).length,
     pagamentos:ativos.length,
   }
 }

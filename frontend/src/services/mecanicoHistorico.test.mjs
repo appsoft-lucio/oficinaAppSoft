@@ -18,8 +18,28 @@ test('separates current commissions, past work and actual receipts without count
     servico(),servico({ ordem_id:'os-2',status:'aberta' }),
     servico({ ordem_id:'os-3',vinculado:false }),servico({ ordem_id:'os-4',status:'cancelada',veiculo_id:'carro2' }),
   ],[{ valor:60,cancelado:false },{ valor:20,cancelado:true },{ valor:10.25,cancelado:false }]),{
-    servicos:4,concluidos:2,emAberto:1,anteriores:1,veiculos:2,comissaoPrevista:120,recebido:70.25,pagamentos:2,
+    servicos:4,concluidos:2,emAberto:1,anteriores:1,veiculos:2,comissaoPrevista:120,comissaoTotal:180,recebido:70.25,aReceber:109.75,adiantamento:0,semComissao:0,pagamentos:2,
   })
+})
+
+test('shows excess payments separately rather than a negative receivable',async () => {
+  const { resumirHistoricoMecanico }=await load()
+  const result=resumirHistoricoMecanico([servico()],[{ valor:100,cancelado:false }])
+  assert.equal(result.comissaoTotal,60)
+  assert.equal(result.aReceber,0)
+  assert.equal(result.adiantamento,40)
+})
+
+test('flags unknown old commissions and keeps cents exact',async () => {
+  const { resumirHistoricoMecanico }=await load()
+  const result=resumirHistoricoMecanico([
+    servico({ valor_servico:null,mecanico_ids:null,mecanico_divisao:null,vinculado:false }),
+    servico({ ordem_id:'os-2',valor_servico:0.03,comissao_percentual:100,mecanico_divisao:{ a:50,b:50 } }),
+  ],[{ valor:0.01,cancelado:false }])
+  assert.equal(result.semComissao,1)
+  assert.equal(result.comissaoTotal,0.02)
+  assert.equal(result.recebido,0.01)
+  assert.equal(result.aReceber,0.01)
 })
 
 test('does not invent historical commissions and follows the shared cents allocation',async () => {
