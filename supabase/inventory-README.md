@@ -25,8 +25,13 @@ que duas saídas usem o mesmo saldo. Os usuários não têm permissão de atuali
 coluna de quantidade diretamente.
 
 As fotos ficam no bucket privado `estoque-produtos`, separadas por
-`oficina_id/produto_id/arquivo`. São permitidos JPG, PNG e WebP de até 5 MB, com
-limites no cliente e no Storage. A exibição usa URLs assinadas por uma hora,
+`oficina_id/produto_id/arquivo`. O app otimiza novas fotos para até 200 KB e 600 px
+no lado maior, preservando a proporção, usando WebP com qualidade 80%/70% e JPEG
+como alternativa. Se necessário, reduz também as dimensões. Fotos pequenas já
+adequadas são mantidas. O Storage continua com teto de 5 MB para compatibilidade;
+o app valida o resultado de até 200 KB antes do upload. Fotos já salvas não são
+convertidas automaticamente: selecione a foto novamente e salve para otimizar.
+A exibição usa URLs assinadas por uma hora,
 renováveis pelo botão de tentar novamente quando expirarem. A troca/remoção de
 foto só exclui a foto anterior após salvar o produto com sucesso. Uma falha de
 rede durante o salvamento pode deixar um upload privado sem vínculo; ele não é

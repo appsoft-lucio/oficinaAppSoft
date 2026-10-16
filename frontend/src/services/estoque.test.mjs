@@ -43,7 +43,7 @@ test('allows adjustment to zero, but rejects zero exits and invalid photos',asyn
   assert.equal((await movimentarEstoque('produto','ajuste',0,'Contagem')).quantidade,0)
   await assert.rejects(movimentarEstoque('produto','saida',0,'Saída'),/quantidade/)
   validarFotoProduto({type:'image/png',size:1024})
-  for(const file of [{type:'image/svg+xml',size:1024},{type:'image/jpeg',size:6*1024*1024},{type:'image/webp',size:0}])assert.throws(()=>validarFotoProduto(file),/5 MB/)
+  for(const file of [{type:'image/svg+xml',size:1024},{type:'image/jpeg',size:201*1024},{type:'image/webp',size:0}])assert.throws(()=>validarFotoProduto(file),/200 KB/)
 })
 
 test('inventory reads all product pages and filters by workshop',async()=>{
@@ -56,4 +56,52 @@ test('inventory reads all product pages and filters by workshop',async()=>{
   }})
   assert.equal((await listProdutos('oficina')).length,1001)
   assert.deepEqual(offsets,[0,1000])
+})
+
+async function withPhotoBrowser(options,run){
+  const previousImage=globalThis.Image,previousDocument=globalThis.document
+  const calls=[]
+  const context={clearRect(){},fillRect(){},drawImage(){},fillStyle:''}
+  const canvas={width:0,height:0,getContext:()=>context,toBlob(callback,type,quality){
+    calls.push({type,quality,width:this.width,height:this.height})
+    const bytes=options.sizes?.[calls.length-1]??(100*1024)
+    callback(new Blob([new Uint8Array(bytes)],{type:options.noWebp&&type==='image/webp'?'image/png':type}))
+  }}
+  globalThis.Image=class{
+    naturalWidth=options.width??3000;naturalHeight=options.height??2000
+    set src(_value){queueMicrotask(()=>this.onload())}
+  }
+  globalThis.document={createElement:()=>canvas}
+  try{await run(calls)}finally{
+    if(previousImage===undefined)delete globalThis.Image;else globalThis.Image=previousImage
+    if(previousDocument===undefined)delete globalThis.document;else globalThis.document=previousDocument
+  }
+}
+
+test('reduces a photo below 200 KB while preserving its aspect ratio',async()=>{
+  const {prepararFotoProduto}=await load()
+  await withPhotoBrowser({sizes:[220*1024,190*1024]},async(calls)=>{
+    const result=await prepararFotoProduto(new File([new Uint8Array(300*1024)],'foto.png',{type:'image/png'}))
+    assert.equal(result.type,'image/webp')
+    assert.equal(result.name,'foto.webp')
+    assert.equal(result.size,190*1024)
+    assert.deepEqual(calls.map(({width,height})=>[width,height]),[[600,400],[600,400]])
+    assert.deepEqual(calls.map(({quality})=>quality),[0.8,0.7])
+  })
+})
+
+test('keeps an already small photo and falls back to JPEG when WebP is unsupported',async()=>{
+  const {prepararFotoProduto}=await load()
+  await withPhotoBrowser({width:400,height:300},async(calls)=>{
+    const file=new File([new Uint8Array(50*1024)],'pequena.png',{type:'image/png'})
+    assert.equal(await prepararFotoProduto(file),file)
+    assert.equal(calls.length,0)
+  })
+  await withPhotoBrowser({noWebp:true},async(calls)=>{
+    const file=new File([new Uint8Array(300*1024)],'grande.png',{type:'image/png'})
+    const result=await prepararFotoProduto(file)
+    assert.equal(result.type,'image/jpeg')
+    assert.equal(result.name,'grande.jpg')
+    assert.deepEqual(calls.map(({type})=>type),['image/webp','image/jpeg'])
+  })
 })
