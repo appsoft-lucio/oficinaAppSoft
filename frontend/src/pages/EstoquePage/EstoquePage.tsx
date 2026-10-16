@@ -5,6 +5,7 @@ import SummaryCard from '../../components/dashboard/SummaryCard'
 import RegistroAutoria from '../../components/dashboard/RegistroAutoria'
 import ProdutoFoto from '../../components/dashboard/ProdutoFoto'
 import EstoqueMovimentoDialog from '../../components/dashboard/EstoqueMovimentoDialog'
+import MoneyInput from '../../components/forms/MoneyInput'
 import { supabase } from '../../lib/supabase'
 import { ensureUserOficina,type Oficina } from '../../services/oficinas'
 import { erroEstoque,listProdutos,numeroEstoque,removeFotoProduto,saveProduto,uploadFotoProduto,validarFotoProduto,type Produto } from '../../services/estoque'
@@ -27,7 +28,7 @@ export default function EstoquePage(){
   const [nome,setNome]=useState('')
   const [descricao,setDescricao]=useState('')
   const [codigo,setCodigo]=useState('')
-  const [preco,setPreco]=useState('0,00')
+  const [preco,setPreco]=useState(0)
   const [quantidade,setQuantidade]=useState('0')
   const [minimo,setMinimo]=useState('0')
   const [photo,setPhoto]=useState<File|null>(null)
@@ -60,11 +61,11 @@ export default function EstoquePage(){
     return matches&&(stockFilter==='todos'||(stockFilter==='zerado'?Number(item.quantidade)===0:Number(item.quantidade)<=Number(item.estoque_minimo)))
   }).sort((a,b)=>a.nome.localeCompare(b.nome)),[produtos,search,stockFilter])
   function resetForm(){
-    setEditing(null);setDraftId(crypto.randomUUID());setNome('');setDescricao('');setCodigo('');setPreco('0,00');setQuantidade('0');setMinimo('0');setPhoto(null);setRemovePhoto(false)
+    setEditing(null);setDraftId(crypto.randomUUID());setNome('');setDescricao('');setCodigo('');setPreco(0);setQuantidade('0');setMinimo('0');setPhoto(null);setRemovePhoto(false)
     if(fileRef.current)fileRef.current.value=''
   }
   function edit(item:Produto){
-    setEditing(item);setNome(item.nome);setDescricao(item.descricao??'');setCodigo(item.codigo_serie??'');setPreco(Number(item.preco).toFixed(2).replace('.',','))
+    setEditing(item);setNome(item.nome);setDescricao(item.descricao??'');setCodigo(item.codigo_serie??'');setPreco(Number(item.preco))
     setMinimo(String(item.estoque_minimo).replace('.',','));setPhoto(null);setRemovePhoto(false);setMessage('')
     if(fileRef.current)fileRef.current.value=''
     formRef.current?.scrollIntoView({block:'start'});formRef.current?.querySelector<HTMLInputElement>('input')?.focus({preventScroll:true})
@@ -79,7 +80,7 @@ export default function EstoquePage(){
     if(!oficina||busy)return
     setBusy(true);setMessage('')
     try{
-      const price=numeroEstoque(preco,2),minimum=numeroEstoque(minimo),initial=editing?undefined:numeroEstoque(quantidade)
+      const price=preco,minimum=numeroEstoque(minimo),initial=editing?undefined:numeroEstoque(quantidade)
       const id=editing?.id??draftId
       let path=removePhoto?null:editing?.foto_path??null
       if(photo)path=await uploadFotoProduto(oficina.id,id,photo)
@@ -111,7 +112,7 @@ export default function EstoquePage(){
             <label className="block text-sm font-bold">Nome do produto<input required maxLength={140} value={nome} disabled={disabled} onChange={(event)=>setNome(event.target.value)} className={input} placeholder="Ex.: filtro de óleo"/></label>
             <label className="block text-sm font-bold">Código / número de série<input maxLength={80} value={codigo} disabled={disabled} onChange={(event)=>setCodigo(event.target.value)} className={input} placeholder="Opcional · único na oficina"/></label>
             <p className="text-xs text-slate-500">Para unidades com números de série diferentes, faça um cadastro para cada uma. Para itens vendidos por quantidade, use o código do produto.</p>
-            <div className="grid grid-cols-2 gap-3"><label className="block text-sm font-bold">Preço de venda (R$)<input required inputMode="decimal" value={preco} disabled={disabled} onChange={(event)=>setPreco(event.target.value)} className={input}/></label><label className="block text-sm font-bold">Estoque mínimo<input required inputMode="decimal" value={minimo} disabled={disabled} onChange={(event)=>setMinimo(event.target.value)} className={input}/></label></div>
+            <div className="grid grid-cols-2 gap-3"><label className="block text-sm font-bold">Preço de venda<MoneyInput required value={preco} disabled={disabled} onValueChange={setPreco} className={input}/><span className="mt-1 block text-xs font-normal text-slate-500">Digite só os números: 123 → R$ 01,23. A vírgula é automática.</span></label><label className="block text-sm font-bold">Estoque mínimo<input required inputMode="decimal" value={minimo} disabled={disabled} onChange={(event)=>setMinimo(event.target.value)} className={input}/></label></div>
             {editing?<p className="rounded-lg bg-slate-50 p-3 text-sm">Saldo atual: <strong>{qty(editing.quantidade)}</strong>. Use “Movimentar / histórico” para registrar entradas, saídas ou ajustes.</p>:<label className="block text-sm font-bold">Quantidade inicial<input required inputMode="decimal" value={quantidade} disabled={disabled} onChange={(event)=>setQuantidade(event.target.value)} className={input}/><span className="mt-1 block text-xs font-normal text-slate-500">Aceita até 3 casas decimais. Ex.: 10 ou 1,5.</span></label>}
             <label className="block text-sm font-bold">Descrição<textarea maxLength={1000} value={descricao} disabled={disabled} onChange={(event)=>setDescricao(event.target.value)} className={`${input} min-h-24`} placeholder="Aplicação, marca ou observações"/></label>
             <label className="block text-sm font-bold">Foto do produto<input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" disabled={disabled} className="mt-2 block w-full text-xs" onChange={(event)=>{
