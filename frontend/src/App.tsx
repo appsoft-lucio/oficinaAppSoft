@@ -19,10 +19,12 @@ import TrialExpiredPage from './pages/TrialExpiredPage/TrialExpiredPage'
 import VeiculosPage from './pages/VeiculosPage/VeiculosPage'
 import EquipePage from './pages/EquipePage/EquipePage'
 import MecanicoHistoricoPage from './pages/MecanicoHistoricoPage/MecanicoHistoricoPage'
+import EstoquePage from './pages/EstoquePage/EstoquePage'
 
 function App() {
   return (
     <Routes>
+      <Route path="/estoque" element={<ProtectedRoute><EstoquePage /></ProtectedRoute>} />
       <Route path="/historico/mecanicos/:id" element={<ProtectedRoute><MecanicoHistoricoPage /></ProtectedRoute>} />
       <Route path="/equipe" element={<ProtectedRoute><EquipePage /></ProtectedRoute>} />
       <Route path="/historico/:tipo/:id" element={<ProtectedRoute><HistoricoPage /></ProtectedRoute>} />

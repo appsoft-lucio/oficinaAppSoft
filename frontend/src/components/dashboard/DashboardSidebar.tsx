@@ -9,6 +9,7 @@ const menuItems = [
   { label: 'Clientes', to: '/clientes' },
   { label: 'Veículos', to: '/veiculos' },
   { label: 'Mecânicos', to: '/mecanicos' },
+  { label: 'Estoque', to: '/estoque' },
   { label: 'Financeiro', to: '/financeiro' },
   { label: 'Fiscal', to: '/fiscal' },
   { label: 'Equipe e atividades', to: '/equipe' },
