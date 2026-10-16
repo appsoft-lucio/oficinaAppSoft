@@ -115,11 +115,22 @@ export default function EstoquePage(){
             <div className="grid grid-cols-2 gap-3"><label className="block text-sm font-bold">Preço de venda<MoneyInput required value={preco} disabled={disabled} onValueChange={setPreco} className={input}/><span className="mt-1 block text-xs font-normal text-slate-500">Digite só os números: 123 → R$ 01,23. A vírgula é automática.</span></label><label className="block text-sm font-bold">Estoque mínimo<input required inputMode="decimal" value={minimo} disabled={disabled} onChange={(event)=>setMinimo(event.target.value)} className={input}/></label></div>
             {editing?<p className="rounded-lg bg-slate-50 p-3 text-sm">Saldo atual: <strong>{qty(editing.quantidade)}</strong>. Use “Movimentar / histórico” para registrar entradas, saídas ou ajustes.</p>:<label className="block text-sm font-bold">Quantidade inicial<input required inputMode="decimal" value={quantidade} disabled={disabled} onChange={(event)=>setQuantidade(event.target.value)} className={input}/><span className="mt-1 block text-xs font-normal text-slate-500">Aceita até 3 casas decimais. Ex.: 10 ou 1,5.</span></label>}
             <label className="block text-sm font-bold">Descrição<textarea maxLength={1000} value={descricao} disabled={disabled} onChange={(event)=>setDescricao(event.target.value)} className={`${input} min-h-24`} placeholder="Aplicação, marca ou observações"/></label>
-            <label className="block text-sm font-bold">Foto do produto<input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" disabled={disabled} className="mt-2 block w-full text-xs" onChange={(event)=>{
+            <div className="text-sm">
+              <span className="block font-bold">Foto do produto</span>
+              <input ref={fileRef} aria-label="Selecionar foto do produto" type="file" accept="image/jpeg,image/png,image/webp" disabled={disabled} className="hidden" onChange={(event)=>{
               const file=event.target.files?.[0]
               if(!file){setPhoto(null);return}
               try{validarFotoProduto(file,false);setPhoto(file);setRemovePhoto(false);setMessage('')}catch(error){setMessage(erroEstoque(error));event.target.value='';setPhoto(null)}
-            }}/><span className="mt-2 block text-xs font-normal text-slate-500">JPG, PNG ou WebP. Ao salvar, a foto é otimizada para até 200 KB e 600 px no lado maior.</span></label>
+              }}/>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <button type="button" disabled={disabled} onClick={()=>fileRef.current?.click()} aria-describedby="produto-foto-ajuda" className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-orange-300 bg-orange-50 px-4 py-3 font-black text-orange-700 transition hover:bg-orange-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600 disabled:opacity-50">
+                  <svg aria-hidden="true" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                  {photo||(editing?.foto_path&&!removePhoto)?'Trocar foto':'Escolher foto'}
+                </button>
+                <span role="status" className="min-w-0 break-all text-xs text-slate-600">{photo?.name??(editing?.foto_path&&!removePhoto?'Foto atual cadastrada':'Nenhuma foto selecionada')}</span>
+              </div>
+              <p id="produto-foto-ajuda" className="mt-2 text-xs text-slate-500">JPG, PNG ou WebP. Ao salvar, a foto é otimizada para até 200 KB e 600 px no lado maior.</p>
+            </div>
             {preview?<img src={preview} alt="Prévia da foto selecionada" className="block h-48 w-full rounded-lg bg-slate-50 object-contain p-2"/>:editing?.foto_path&&!removePhoto?<ProdutoFoto path={editing.foto_path} nome={editing.nome}/>:null}
             {editing?.foto_path?<label className="block text-sm"><input type="checkbox" checked={removePhoto} disabled={disabled} onChange={(event)=>{setRemovePhoto(event.target.checked);if(event.target.checked){setPhoto(null);if(fileRef.current)fileRef.current.value=''}}}/> Remover a foto atual ao salvar</label>:null}
             <button disabled={disabled} type="submit" className="min-h-12 w-full rounded-lg bg-orange-600 px-5 py-3 font-black text-white disabled:opacity-50">{busy?'Salvando...':editing?'Salvar alterações':'Cadastrar produto'}</button>
