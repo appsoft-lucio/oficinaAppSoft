@@ -119,7 +119,7 @@ export default function EstoquePage(){
               if(!file){setPhoto(null);return}
               try{validarFotoProduto(file,false);setPhoto(file);setRemovePhoto(false);setMessage('')}catch(error){setMessage(erroEstoque(error));event.target.value='';setPhoto(null)}
             }}/><span className="mt-2 block text-xs font-normal text-slate-500">JPG, PNG ou WebP. Fotos maiores que 5 MB são reduzidas automaticamente ao salvar.</span></label>
-            {preview?<img src={preview} alt="Prévia da foto selecionada" className="h-40 w-full rounded-lg bg-slate-50 object-contain"/>:editing?.foto_path&&!removePhoto?<ProdutoFoto path={editing.foto_path} nome={editing.nome}/>:null}
+            {preview?<img src={preview} alt="Prévia da foto selecionada" className="block h-48 w-full rounded-lg bg-slate-50 object-contain p-2"/>:editing?.foto_path&&!removePhoto?<ProdutoFoto path={editing.foto_path} nome={editing.nome}/>:null}
             {editing?.foto_path?<label className="block text-sm"><input type="checkbox" checked={removePhoto} disabled={disabled} onChange={(event)=>{setRemovePhoto(event.target.checked);if(event.target.checked){setPhoto(null);if(fileRef.current)fileRef.current.value=''}}}/> Remover a foto atual ao salvar</label>:null}
             <button disabled={disabled} type="submit" className="min-h-12 w-full rounded-lg bg-orange-600 px-5 py-3 font-black text-white disabled:opacity-50">{busy?'Salvando...':editing?'Salvar alterações':'Cadastrar produto'}</button>
             {editing?<button type="button" disabled={busy} onClick={resetForm} className="w-full rounded-lg border border-slate-300 px-4 py-3 text-sm font-bold">Cancelar edição</button>:null}
